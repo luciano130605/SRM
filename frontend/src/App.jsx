@@ -6,7 +6,7 @@ import Pedidos from "./components/pedidos/pedidos"
 import Header from "./components/header/header"
 import "./App.css"
 
-function App() {
+export default function App() {
     const [vista, setVista] = useState('dashboard')
 
     const renderVista = () => {
@@ -35,4 +35,3 @@ function App() {
     )
 }
 
-export default App
