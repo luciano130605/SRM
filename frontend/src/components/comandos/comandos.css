@@ -1,0 +1,97 @@
+.command-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--white-grey);
+}
+
+.command-switch button {
+    padding: 0.45rem 0.65rem;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+}
+
+.command-switch button:hover {
+    background: var(--pink);
+    color: var(--white);
+}
+
+.shortcuts-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(12, 12, 12, 0.28);
+}
+
+.shortcuts-modal {
+    width: min(420px, 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white-grey);
+    color: var(--black);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+}
+
+.shortcuts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.shortcuts-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.shortcuts-header button {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--white);
+    color: var(--black);
+    padding: 0.45rem 0.65rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+}
+
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0.6rem 1rem 1rem;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-item kbd {
+    padding: 0.2rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--pink);
+}

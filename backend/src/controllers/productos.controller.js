@@ -10,7 +10,7 @@ function obtenerProductos(req, res) {
 
 function crearProducto(req, res) {
     try {
-        const { nombre, categoria, costo, precioVenta } = req.body
+        const { nombre, categoriaId, costo, precioVenta } = req.body
 
         if (!nombre || !precioVenta) {
             return res.status(400).json({
@@ -21,7 +21,7 @@ function crearProducto(req, res) {
 
         const nuevoProducto = {
             id: uuidv4(),
-            nombre, categoria, costo, precioVenta
+            nombre, categoriaId, costo, precioVenta
         }
 
         productos.push(nuevoProducto)
@@ -62,4 +62,33 @@ function eliminarProducto(req, res) {
     })
 }
 
-module.exports = { obtenerProductos, crearProducto, eliminarProducto }
+function editarProducto(req, res) {
+    const { id } = req.params
+    const { nombre, categoriaId, costo, precioVenta } = req.body
+
+    const indice = productos.findIndex(
+        producto => String(producto.id) === id
+    )
+
+    if (indice === -1) {
+        return res.status(404).json({
+            ok: false,
+            mensaje: 'Producto no encontrado'
+        })
+    }
+
+    productos[indice] = {
+        ...productos[indice],
+        nombre,
+        categoriaId,
+        costo,
+        precioVenta
+    }
+
+    res.status(200).json({
+        ok: true,
+        data: productos[indice]
+    })
+}
+
+module.exports = { obtenerProductos, crearProducto, eliminarProducto, editarProducto }

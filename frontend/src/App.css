@@ -10,3 +10,12 @@
     --border: #c3bfb6;
     --borderHover: #b4bdbc;
 }
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-main {
+    padding-top: 0.5rem;
+}
+

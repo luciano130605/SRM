@@ -1,292 +1,30 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import api from "../../../services/api"
 import "./pedidos.css"
+import Buscador from "../buscador/buscador"
+import VistaSwitch from "../vista-switch/vista-switch"
+import ImportExport from "../import-export/import-export"
+import LimpiarTodo from "../limpiar-todo/limpiar-todo"
+import ToastDeshacer from "../toast-deshacer/toast-deshacer"
+import Toast from "../toast/toast"
+import Comandos from "../comandos/comandos"
+import FormularioPedido from "./formulario-pedido"
+import FiltrosPedidos from "./filtros-pedidos"
+import ListaPedidos from "./lista-pedidos"
+import Paginacion from '../paginacion/paginacion'
+import useEliminacionDeshacer from "../../hooks/use-eliminacion-deshacer"
+import { exportarCsv, normalizarTexto, obtenerValorFila, parsearNumero, parsearTablaCsv } from "../../utils/csv"
 
-const POR_PAGINA = 15
-const ESTADOS = ['pendiente', 'en proceso', 'entregado', 'cancelado']
-
-function formatPrecio(v) {
-    return (parseFloat(v) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-function chipClass(estado) {
-    const map = {
-        pendiente: 'estado-pendiente',
-        entregado: 'estado-entregado',
-        cancelado: 'estado-cancelado',
-        'en proceso': 'estado-en-proceso',
-        'en-proceso': 'estado-en-proceso',
-    }
-    return map[(estado || '').toLowerCase()] || 'estado-pendiente'
-}
-
-function siguienteEstado(estado) {
-    const ciclo = ['pendiente', 'en proceso', 'entregado']
-    const i = ciclo.indexOf((estado || '').toLowerCase())
-    return i >= 0 && i < ciclo.length - 1 ? ciclo[i + 1] : estado
-}
-
-
-function TarjetaPedido({ pedido, clientes, onEliminar, onEditar, onCambiarEstado }) {
-    const [editando, setEditando] = useState(false)
-    const [draft, setDraft] = useState({})
-
-    const clienteMap = useMemo(() =>
-        Object.fromEntries(clientes.map(c => [String(c.id), c])), [clientes])
-
-    const cliente = clienteMap[String(pedido.clienteId)] || {}
-    const fecha = pedido.fecha || pedido.createdAt
-        ? new Date(pedido.fecha || pedido.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
-        : '—'
-
-    const items = pedido.items || pedido.productos || []
-
-    function iniciarEdicion() {
-        setDraft({
-            clienteId: pedido.clienteId || '',
-            estado: pedido.estado || 'pendiente',
-            total: pedido.total || '',
-            notas: pedido.notas || '',
-            fecha: pedido.fecha ? pedido.fecha.slice(0, 10) : '',
-        })
-        setEditando(true)
-    }
-
-    function cancelar() { setEditando(false); setDraft({}) }
-
-    async function guardar() {
-        await onEditar(pedido.id, draft)
-        setEditando(false)
-        setDraft({})
-    }
-
-    function onKey(e) {
-        if (e.key === 'Enter') guardar()
-        if (e.key === 'Escape') cancelar()
-    }
-
-    return (
-        <article className={`ped-card${editando ? ' editando' : ''}`}>
-            <div className="ped-card-header">
-                <div className="ped-card-left">
-                    <p className="ped-card-id">Pedido #{pedido.id}</p>
-                    <p className="ped-card-cliente">{cliente.nombre || `Cliente #${pedido.clienteId}`}</p>
-                    <p className="ped-card-fecha">{fecha}</p>
-                </div>
-                <div className="ped-card-right">
-                    <span className="ped-card-total">${formatPrecio(pedido.total)}</span>
-                    {!editando && (
-                        <span
-                            className={`estado-chip ${chipClass(pedido.estado)}`}
-                            title="Clic para avanzar estado"
-                            onClick={() => onCambiarEstado(pedido.id, siguienteEstado(pedido.estado))}
-                        >
-                            {pedido.estado || 'pendiente'}
-                        </span>
-                    )}
-                    <div className="ped-card-actions">
-                        {editando ? (
-                            <>
-                                <button className="btn-icon btn-save" onClick={guardar} title="Guardar">✓</button>
-                                <button className="btn-icon" onClick={cancelar} title="Cancelar">✕</button>
-                            </>
-                        ) : (
-                            <>
-                                <button className="btn-icon btn-edit" onClick={iniciarEdicion} title="Editar">✎</button>
-                                <button className="btn-icon btn-delete" onClick={() => onEliminar(pedido.id)} title="Eliminar">✕</button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {editando ? (
-                <div className="ped-edit-grid" onKeyDown={onKey}>
-                    <div className="ped-edit-field">
-                        <label className="ped-edit-label">Cliente</label>
-                        <select className="ped-edit-input" value={draft.clienteId}
-                            onChange={e => setDraft(d => ({ ...d, clienteId: e.target.value }))}>
-                            <option value="">Sin cliente</option>
-                            {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                        </select>
-                    </div>
-                    <div className="ped-edit-field">
-                        <label className="ped-edit-label">Estado</label>
-                        <select className="ped-edit-input" value={draft.estado}
-                            onChange={e => setDraft(d => ({ ...d, estado: e.target.value }))}>
-                            {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-                    <div className="ped-edit-field">
-                        <label className="ped-edit-label">Total</label>
-                        <input autoFocus type="number" className="ped-edit-input" value={draft.total}
-                            onChange={e => setDraft(d => ({ ...d, total: e.target.value }))} />
-                    </div>
-                    <div className="ped-edit-field">
-                        <label className="ped-edit-label">Fecha</label>
-                        <input type="date" className="ped-edit-input" value={draft.fecha}
-                            onChange={e => setDraft(d => ({ ...d, fecha: e.target.value }))} />
-                    </div>
-                    <div className="ped-edit-field span-2">
-                        <label className="ped-edit-label">Notas</label>
-                        <input className="ped-edit-input" value={draft.notas}
-                            onChange={e => setDraft(d => ({ ...d, notas: e.target.value }))} placeholder="Indicaciones especiales…" />
-                    </div>
-                </div>
-            ) : (
-                <>
-                    {items.length > 0 && (
-                        <div className="ped-card-items">
-                            {items.map((it, i) => (
-                                <span key={i} className="ped-item-chip">
-                                    {it.nombre || it.productoNombre || `Producto #${it.productoId}`}
-                                    {it.cantidad && it.cantidad > 1 ? ` ×${it.cantidad}` : ''}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                    {pedido.notas && <p className="ped-card-notas">"{pedido.notas}"</p>}
-                </>
-            )}
-        </article>
-    )
-}
-
-
-function FormularioPedido({ onCrear, creando, clientes, productos }) {
-    const [clienteId, setClienteId] = useState('')
-    const [estado, setEstado] = useState('pendiente')
-    const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10))
-    const [notas, setNotas] = useState('')
-    const [items, setItems] = useState([{ productoId: '', cantidad: 1 }])
-
-    const total = useMemo(() => {
-        return items.reduce((sum, it) => {
-            const prod = productos.find(p => String(p.id) === String(it.productoId))
-            return sum + (parseFloat(prod?.precioVenta) || 0) * (parseInt(it.cantidad) || 1)
-        }, 0)
-    }, [items, productos])
-
-    function addItem() { setItems(prev => [...prev, { productoId: '', cantidad: 1 }]) }
-    function removeItem(i) { setItems(prev => prev.filter((_, idx) => idx !== i)) }
-    function updateItem(i, field, val) {
-        setItems(prev => prev.map((it, idx) => idx === i ? { ...it, [field]: val } : it))
-    }
-
-    function handleCrear() {
-        if (!clienteId) return
-        const itemsConDatos = items
-            .filter(it => it.productoId)
-            .map(it => {
-                const prod = productos.find(p => String(p.id) === String(it.productoId))
-                return {
-                    productoId: it.productoId,
-                    nombre: prod?.nombre || '',
-                    cantidad: parseInt(it.cantidad) || 1,
-                    precioUnitario: parseFloat(prod?.precioVenta) || 0,
-                }
-            })
-
-        onCrear({ clienteId, estado, fecha, notas, items: itemsConDatos, total }, () => {
-            setClienteId(''); setEstado('pendiente')
-            setFecha(new Date().toISOString().slice(0, 10))
-            setNotas('')
-            setItems([{ productoId: '', cantidad: 1 }])
-        })
-    }
-
-    const valido = !!clienteId
-
-    return (
-        <aside className="ped-form-panel">
-            <h2 className="ped-panel-title">Nuevo pedido</h2>
-
-            <div className="ped-field">
-                <label className="ped-field-label">Cliente *</label>
-                <select className="ped-input" value={clienteId} onChange={e => setClienteId(e.target.value)}>
-                    <option value="">Seleccionar cliente</option>
-                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                </select>
-            </div>
-
-            <div className="ped-field">
-                <label className="ped-field-label">Estado</label>
-                <select className="ped-input" value={estado} onChange={e => setEstado(e.target.value)}>
-                    {ESTADOS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-            </div>
-
-            <div className="ped-field">
-                <label className="ped-field-label">Fecha</label>
-                <input className="ped-input" type="date" value={fecha} onChange={e => setFecha(e.target.value)} />
-            </div>
-
-            <div className="ped-items-section">
-                <div className="ped-items-label">
-                    <span>Productos</span>
-                    <button type="button" onClick={addItem}>+ Agregar</button>
-                </div>
-                {items.map((it, i) => (
-                    <div key={i} className="ped-item-row">
-                        <select
-                            value={it.productoId}
-                            onChange={e => updateItem(i, 'productoId', e.target.value)}
-                        >
-                            <option value="">Seleccionar…</option>
-                            {productos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                        </select>
-                        <input
-                            type="number"
-                            min="1"
-                            value={it.cantidad}
-                            onChange={e => updateItem(i, 'cantidad', e.target.value)}
-                            placeholder="Cant."
-                        />
-                        <button className="ped-item-remove" onClick={() => removeItem(i)} disabled={items.length === 1}>✕</button>
-                    </div>
-                ))}
-            </div>
-
-            {total > 0 && (
-                <div style={{ marginBottom: '0.75rem', fontSize: '12px', fontWeight: 400, textAlign: 'right', color: 'var(--pink)' }}>
-                    Total estimado: <strong>${formatPrecio(total)}</strong>
-                </div>
-            )}
-
-            <div className="ped-field">
-                <label className="ped-field-label">Notas</label>
-                <input className="ped-input" type="text" placeholder="Indicaciones especiales…"
-                    value={notas} onChange={e => setNotas(e.target.value)} />
-            </div>
-
-            <button className="ped-btn-create" onClick={handleCrear} disabled={!valido || creando}>
-                {creando ? 'Guardando…' : 'Crear pedido'}
-            </button>
-        </aside>
-    )
-}
-
-
-function Paginacion({ pagina, total, onChange, desde, hasta, totalItems }) {
-    if (total <= 1) return null
-    const paginas = []
-    for (let i = 1; i <= total; i++) {
-        if (i === 1 || i === total || Math.abs(i - pagina) <= 2) paginas.push(i)
-        else if (paginas[paginas.length - 1] !== '…') paginas.push('…')
-    }
-    return (
-        <div className="ped-paginacion">
-            <button className="ped-pag-btn" disabled={pagina === 1} onClick={() => onChange(pagina - 1)}>← Ant</button>
-            {paginas.map((p, i) => p === '…'
-                ? <span key={`e${i}`} className="ped-pag-info">…</span>
-                : <button key={p} className={`ped-pag-btn${p === pagina ? ' activo' : ''}`} onClick={() => onChange(p)}>{p}</button>
-            )}
-            <button className="ped-pag-btn" disabled={pagina === total} onClick={() => onChange(pagina + 1)}>Sig →</button>
-            <span className="ped-pag-info">{desde}–{hasta} de {totalItems}</span>
-        </div>
-    )
-}
-
+const POR_PAGINA = 3
+const comandosPedidos = [
+    { teclas: 'Ctrl + H', accion: 'Buscar pedidos' },
+    { teclas: 'Ctrl + M', accion: 'Cambiar Cards / Tabla' },
+    { teclas: 'Ctrl + E', accion: 'Exportar sheet' },
+    { teclas: 'Ctrl + I', accion: 'Importar sheet' },
+    { teclas: 'Ctrl + Z', accion: 'Deshacer eliminacion' },
+    { teclas: 'Ctrl + /', accion: 'Ver comandos' },
+    { teclas: 'Esc', accion: 'Cerrar ventanas' }
+]
 
 function Pedidos() {
     const [pedidos, setPedidos] = useState([])
@@ -296,34 +34,66 @@ function Pedidos() {
     const [busqueda, setBusqueda] = useState('')
     const [filtroEstado, setFiltroEstado] = useState('')
     const [orden, setOrden] = useState('reciente')
+    const [vista, setVista] = useState('cards')
     const [pagina, setPagina] = useState(1)
+    const [importando, setImportando] = useState(false)
+    const [resultadoImportacion, setResultadoImportacion] = useState('')
+    const [toast, setToast] = useState(null)
+    const [comandosAbiertos, setComandosAbiertos] = useState(false)
+    const buscadorRef = useRef(null)
+    const inputImportRef = useRef(null)
+
+    const {
+        toastDeshacer,
+        confirmarAccionPendiente,
+        deshacerEliminacion,
+        eliminarItem,
+        limpiarItems,
+    } = useEliminacionDeshacer({
+        nombreSingular: 'Pedido',
+        nombrePlural: 'pedidos',
+        setItems: setPedidos,
+        eliminarEnServidor: pedido => api.delete(`/pedidos/${pedido.id}`),
+        onError: mostrarError,
+    })
 
     const clienteMap = useMemo(() =>
-        Object.fromEntries(clientes.map(c => [String(c.id), c])), [clientes])
+        Object.fromEntries(clientes.map(cliente => [String(cliente.id), cliente])), [clientes])
 
     const procesados = useMemo(() => {
         let lista = [...pedidos]
 
         if (busqueda.trim()) {
             const q = busqueda.toLowerCase()
-            lista = lista.filter(p => {
-                const cliente = clienteMap[String(p.clienteId)] || {}
+
+            lista = lista.filter(pedido => {
+                const cliente = clienteMap[String(pedido.clienteId)] || {}
+
                 return (cliente.nombre || '').toLowerCase().includes(q) ||
-                    String(p.id).includes(q) ||
-                    (p.notas || '').toLowerCase().includes(q)
+                    String(pedido.id).includes(q) ||
+                    (pedido.notas || '').toLowerCase().includes(q)
             })
         }
 
         if (filtroEstado) {
-            lista = lista.filter(p => (p.estado || 'pendiente').toLowerCase() === filtroEstado)
+            lista = lista.filter(pedido => (pedido.estado || 'pendiente').toLowerCase() === filtroEstado)
         }
 
         switch (orden) {
-            case 'reciente': lista.sort((a, b) => new Date(b.fecha || b.createdAt || 0) - new Date(a.fecha || a.createdAt || 0)); break
-            case 'antiguo': lista.sort((a, b) => new Date(a.fecha || a.createdAt || 0) - new Date(b.fecha || b.createdAt || 0)); break
-            case 'mayor-total': lista.sort((a, b) => (parseFloat(b.total) || 0) - (parseFloat(a.total) || 0)); break
-            case 'menor-total': lista.sort((a, b) => (parseFloat(a.total) || 0) - (parseFloat(b.total) || 0)); break
-            default: break
+            case 'reciente':
+                lista.sort((a, b) => new Date(b.fecha || b.createdAt || 0) - new Date(a.fecha || a.createdAt || 0))
+                break
+            case 'antiguo':
+                lista.sort((a, b) => new Date(a.fecha || a.createdAt || 0) - new Date(b.fecha || b.createdAt || 0))
+                break
+            case 'mayor-total':
+                lista.sort((a, b) => (parseFloat(b.total) || 0) - (parseFloat(a.total) || 0))
+                break
+            case 'menor-total':
+                lista.sort((a, b) => (parseFloat(a.total) || 0) - (parseFloat(b.total) || 0))
+                break
+            default:
+                break
         }
 
         return lista
@@ -344,49 +114,221 @@ function Pedidos() {
                 api.get('/clientes'),
                 api.get('/productos'),
             ])
-            setPedidos(rPed.data.data || rPed.data || [])
-            setClientes(rCli.data.data || rCli.data || [])
-            setProductos(rProd.data.data || rProd.data || [])
-        } catch (e) { console.log(e) }
+
+            setPedidos(rPed.data?.data ?? rPed.data ?? [])
+            setClientes(rCli.data?.data ?? rCli.data ?? [])
+            setProductos(rProd.data?.data ?? rProd.data ?? [])
+        } catch (error) {
+            mostrarError('No se pudieron cargar los pedidos.')
+        }
+    }
+
+    function mostrarError(mensaje) {
+        setToast({ mensaje, tipo: 'error' })
+        window.setTimeout(() => setToast(null), 3500)
     }
 
     async function crearPedido(datos, onExito) {
         setCreando(true)
+
         try {
+            await confirmarAccionPendiente()
             await api.post('/pedidos', datos)
             await obtener()
             onExito()
-        } catch (e) { console.log(e) }
-        finally { setCreando(false) }
+        } catch (error) {
+            mostrarError('No se pudo crear el pedido.')
+        } finally {
+            setCreando(false)
+        }
     }
 
     async function editarPedido(id, datos) {
         try {
+            await confirmarAccionPendiente()
             await api.put(`/pedidos/${id}`, datos)
-            setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...datos } : p))
-        } catch (e) { console.log(e) }
+            setPedidos(prev => prev.map(pedido => pedido.id === id ? { ...pedido, ...datos } : pedido))
+        } catch (error) {
+            mostrarError('No se pudo editar el pedido.')
+        }
     }
 
     async function cambiarEstado(id, nuevoEstado) {
         try {
+            await confirmarAccionPendiente()
             await api.patch(`/pedidos/${id}`, { estado: nuevoEstado })
-            setPedidos(prev => prev.map(p => p.id === id ? { ...p, estado: nuevoEstado } : p))
-        } catch (e) {
+            setPedidos(prev => prev.map(pedido => pedido.id === id ? { ...pedido, estado: nuevoEstado } : pedido))
+        } catch (error) {
             try {
-                const pedido = pedidos.find(p => p.id === id)
+                const pedido = pedidos.find(item => item.id === id)
                 if (pedido) await editarPedido(id, { ...pedido, estado: nuevoEstado })
-            } catch (_) { console.log(e) }
+            } catch (_) {
+                mostrarError('No se pudo cambiar el estado del pedido.')
+            }
         }
     }
 
     async function eliminarPedido(id) {
+        const index = pedidos.findIndex(pedido => String(pedido.id) === String(id))
+        await eliminarItem(pedidos[index], index)
+    }
+
+    async function limpiarPedidos() {
+        await limpiarItems(pedidos)
+    }
+
+    function exportarPedidosSheet() {
+        const filas = procesados.map(pedido => {
+            const cliente = clienteMap[String(pedido.clienteId)] || {}
+            const items = pedido.items || pedido.productos || []
+            const productosTexto = items
+                .map(item => {
+                    const nombre = item.nombre || item.productoNombre || item.productoId || ''
+                    const cantidad = item.cantidad ? ` x${item.cantidad}` : ''
+                    return `${nombre}${cantidad}`
+                })
+                .join(', ')
+
+            return [
+                pedido.id,
+                cliente.nombre || '',
+                pedido.clienteId || '',
+                pedido.estado || 'pendiente',
+                pedido.fecha || pedido.createdAt || '',
+                pedido.total || 0,
+                pedido.notas || '',
+                productosTexto
+            ]
+        })
+
+        const encabezados = ['ID', 'Cliente', 'Cliente ID', 'Estado', 'Fecha', 'Total', 'Notas', 'Productos']
+
+        exportarCsv({
+            nombreArchivo: `pedidos-${new Date().toISOString().slice(0, 10)}.csv`,
+            encabezados,
+            filas,
+        })
+    }
+
+    function buscarClienteImportado(clienteId, clienteNombre) {
+        if (clienteId) {
+            const porId = clientes.find(cliente => String(cliente.id) === String(clienteId))
+            if (porId) return porId.id
+        }
+
+        const nombreNormalizado = normalizarTexto(clienteNombre)
+        const porNombre = clientes.find(cliente => normalizarTexto(cliente.nombre) === nombreNormalizado)
+
+        return porNombre?.id || ''
+    }
+
+    function parsearTablaPedidos(contenido) {
+        const { filas, indices } = parsearTablaCsv(contenido)
+
+        return filas
+            .map(fila => {
+                const clienteNombre = obtenerValorFila(fila, indices, ['cliente', 'nombre cliente']).trim()
+                const clienteId = buscarClienteImportado(
+                    obtenerValorFila(fila, indices, ['cliente id', 'clienteid']),
+                    clienteNombre
+                )
+                const estado = obtenerValorFila(fila, indices, ['estado']).trim() || 'pendiente'
+                const fecha = obtenerValorFila(fila, indices, ['fecha']).trim()
+                const total = parsearNumero(obtenerValorFila(fila, indices, ['total']), 0)
+                const notas = obtenerValorFila(fila, indices, ['notas', 'nota']).trim()
+
+                return { clienteId, estado, fecha, total, notas, items: [] }
+            })
+            .filter(pedido => pedido.clienteId)
+    }
+
+    async function importarPedidosSheet(e) {
+        const archivo = e.target.files?.[0]
+        e.target.value = ''
+
+        if (!archivo) return
+
+        setImportando(true)
+        setResultadoImportacion('')
+
         try {
-            await api.delete(`/pedidos/${id}`)
-            setPedidos(prev => prev.filter(p => p.id !== id))
-        } catch (e) { console.log(e) }
+            await confirmarAccionPendiente()
+            const contenido = await archivo.text()
+            const pedidosImportados = parsearTablaPedidos(contenido)
+
+            if (pedidosImportados.length === 0) {
+                setResultadoImportacion('No se encontraron pedidos validos.')
+                return
+            }
+
+            for (const pedido of pedidosImportados) {
+                await api.post('/pedidos', pedido)
+            }
+
+            await obtener()
+            setResultadoImportacion(`${pedidosImportados.length} pedidos importados.`)
+        } catch (error) {
+            mostrarError('No se pudo importar la tabla.')
+            setResultadoImportacion('No se pudo importar la tabla.')
+        } finally {
+            setImportando(false)
+        }
     }
 
     useEffect(() => { obtener() }, [])
+
+    useEffect(() => {
+        function enfocarBuscador() {
+            buscadorRef.current?.focus()
+            buscadorRef.current?.select?.()
+        }
+
+        function handleKeyDown(e) {
+            const tecla = e.key.toLowerCase()
+            const conCtrl = e.ctrlKey || e.metaKey
+
+            if (e.key === 'Escape') {
+                if (comandosAbiertos) setComandosAbiertos(false)
+                if (resultadoImportacion) setResultadoImportacion('')
+                return
+            }
+
+            if (!conCtrl) return
+
+            if (tecla === 'h') {
+                e.preventDefault()
+                enfocarBuscador()
+            }
+
+            if (tecla === 'm') {
+                e.preventDefault()
+                setVista(v => v === 'cards' ? 'tabla' : 'cards')
+            }
+
+            if (tecla === 'e') {
+                e.preventDefault()
+                if (procesados.length > 0) exportarPedidosSheet()
+            }
+
+            if (tecla === 'i') {
+                e.preventDefault()
+                if (!importando) inputImportRef.current?.click()
+            }
+
+            if (tecla === 'z') {
+                e.preventDefault()
+                deshacerEliminacion()
+            }
+
+            if (e.key === '/') {
+                e.preventDefault()
+                setComandosAbiertos(true)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [comandosAbiertos, importando, procesados, resultadoImportacion])
 
     const hayFiltros = busqueda.trim() || filtroEstado
 
@@ -394,8 +336,8 @@ function Pedidos() {
         <div className="ped-contenedor">
             <header className="ped-header">
                 <div>
-                    <p className="ped-label">Sistema de gestión</p>
-                    <h1 className="ped-title">SRM <em>Pedidos</em></h1>
+                    <p className="ped-label">Sistema de gestion</p>
+                    <h1 className="ped-title"><em>Pedidos</em></h1>
                 </div>
                 <span className="ped-header-count">
                     {pedidos.length} {pedidos.length === 1 ? 'pedido' : 'pedidos'}
@@ -403,27 +345,28 @@ function Pedidos() {
             </header>
 
             <div className="ped-toolbar">
-                <div className="ped-search-wrap">
-                    <span className="ped-search-icon">⌕</span>
-                    <input
-                        placeholder="Buscar por cliente, notas o ID…"
-                        value={busqueda}
-                        onChange={e => setBusqueda(e.target.value)}
-                    />
-                </div>
-                <select className="ped-select" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
-                    <option value="">Todos los estados</option>
-                    {ESTADOS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                </select>
-                <select className="ped-select" value={orden} onChange={e => setOrden(e.target.value)}>
-                    <option value="reciente">Más reciente</option>
-                    <option value="antiguo">Más antiguo</option>
-                    <option value="mayor-total">Mayor total</option>
-                    <option value="menor-total">Menor total</option>
-                </select>
-                {hayFiltros && (
-                    <span className="ped-results-label">{procesados.length} resultado{procesados.length !== 1 ? 's' : ''}</span>
-                )}
+                <Comandos
+                    abierto={comandosAbiertos}
+                    setAbierto={setComandosAbiertos}
+                    comandos={comandosPedidos}
+                />
+
+                <Buscador
+                    inputRef={buscadorRef}
+                    value={busqueda}
+                    onChange={setBusqueda}
+                    placeholder="Buscar por cliente, notas o ID..."
+                    className="ped-buscador"
+                />
+
+                <FiltrosPedidos
+                    filtroEstado={filtroEstado}
+                    setFiltroEstado={setFiltroEstado}
+                    orden={orden}
+                    setOrden={setOrden}
+                    hayFiltros={hayFiltros}
+                    totalFiltrados={procesados.length}
+                />
             </div>
 
             <div className="ped-layout">
@@ -444,21 +387,40 @@ function Pedidos() {
                         )}
                     </h2>
 
+                    <div className="catalogo-actions ped-actions">
+                        <LimpiarTodo
+                            onLimpiar={limpiarPedidos}
+                            disabled={pedidos.length === 0}
+                            titulo="Eliminar todos los pedidos"
+                        />
+
+                        <VistaSwitch vista={vista} setVista={setVista} />
+
+                        <ImportExport
+                            onExportar={exportarPedidosSheet}
+                            onImportar={importarPedidosSheet}
+                            importando={importando}
+                            exportDisabled={procesados.length === 0}
+                            inputRef={inputImportRef}
+                            titulo="Importar o exportar pedidos"
+                        />
+                    </div>
+
+                    {resultadoImportacion && (
+                        <p className="import-sheet-result">{resultadoImportacion}</p>
+                    )}
+
                     {procesados.length === 0
-                        ? <p className="ped-empty">Ningún pedido encontrado.</p>
+                        ? <p className="ped-empty">Ningun pedido encontrado.</p>
                         : <>
-                            <div className="ped-grid">
-                                {paginados.map(p => (
-                                    <TarjetaPedido
-                                        key={p.id}
-                                        pedido={p}
-                                        clientes={clientes}
-                                        onEliminar={eliminarPedido}
-                                        onEditar={editarPedido}
-                                        onCambiarEstado={cambiarEstado}
-                                    />
-                                ))}
-                            </div>
+                            <ListaPedidos
+                                pedidos={paginados}
+                                clientes={clientes}
+                                vista={vista}
+                                onEliminar={eliminarPedido}
+                                onEditar={editarPedido}
+                                onCambiarEstado={cambiarEstado}
+                            />
                             <Paginacion
                                 pagina={paginaReal}
                                 total={totalPaginas}
@@ -471,6 +433,12 @@ function Pedidos() {
                     }
                 </section>
             </div>
+
+            <ToastDeshacer
+                mensaje={toastDeshacer?.mensaje}
+                onDeshacer={deshacerEliminacion}
+            />
+            <Toast mensaje={toast?.mensaje} tipo={toast?.tipo} />
         </div>
     )
 }

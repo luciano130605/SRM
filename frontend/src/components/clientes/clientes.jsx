@@ -1,215 +1,31 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import api from "../../../services/api"
 import "./clientes.css"
+import TarjetaCliente from "./tarjeta-cliente"
+import FormularioCliente from "./formulario-cliente"
+import Buscador from "../buscador/buscador"
+import Comandos from "../comandos/comandos"
+import VistaSwitch from "../vista-switch/vista-switch"
+import LimpiarTodo from "../limpiar-todo/limpiar-todo"
+import TablaClientes from "./tabla-clientes"
+import ImportExport from "../import-export/import-export"
+import Paginacion from '../paginacion/paginacion'
+import ToastDeshacer from "../toast-deshacer/toast-deshacer"
+import Toast from "../toast/toast"
+import useEliminacionDeshacer from "../../hooks/use-eliminacion-deshacer"
+import { exportarCsv, normalizarTexto, obtenerValorFila, parsearTablaCsv } from "../../utils/csv"
 
-const POR_PAGINA = 18
+const POR_PAGINA = 10
 
-function iniciales(nombre = '') {
-    return nombre.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?'
-}
-
-function TarjetaCliente({ cliente, onEliminar, onEditar, pedidosCount }) {
-    const [editando, setEditando] = useState(false)
-    const [draft, setDraft] = useState({})
-
-    function iniciarEdicion() {
-        setDraft({
-            nombre: cliente.nombre || '',
-            telefono: cliente.telefono || '',
-            direccion: cliente.direccion || '',
-            notas: cliente.notas || '',
-            instagram: cliente.instagram || '',
-        })
-        setEditando(true)
-    }
-
-    function cancelar() { setEditando(false); setDraft({}) }
-
-    async function guardar() {
-        if (!draft.nombre?.trim()) return
-        await onEditar(cliente.id, draft)
-        setEditando(false)
-        setDraft({})
-    }
-
-    function onKey(e) {
-        if (e.key === 'Enter') guardar()
-        if (e.key === 'Escape') cancelar()
-    }
-
-    const fecha = cliente.createdAt
-        ? new Date(cliente.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })
-        : null
-
-    return (
-        <article className={`cli-card${editando ? ' editando' : ''}`}>
-            <div className="cli-card-top">
-                <div className="cli-av">{iniciales(editando ? draft.nombre : cliente.nombre)}</div>
-                <div className="cli-card-info">
-                    {!editando && <p className="cli-card-nombre" title={cliente.nombre}>{cliente.nombre}</p>}
-                    {!editando && (cliente.telefono) && (
-                        <p className="cli-card-meta">{cliente.telefono}</p>
-                    )}
-                </div>
-                <div className="cli-card-actions">
-                    {editando ? (
-                        <>
-                            <button className="btn-icon btn-save" onClick={guardar} title="Guardar">✓</button>
-                            <button className="btn-icon btn-cancel" onClick={cancelar} title="Cancelar">✕</button>
-                        </>
-                    ) : (
-                        <>
-                            <button className="btn-icon btn-edit" onClick={iniciarEdicion} title="Editar">✎</button>
-                            <button className="btn-icon btn-delete" onClick={() => onEliminar(cliente.id)} title="Eliminar">✕</button>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {editando ? (
-                <div className="cli-edit-grid" onKeyDown={onKey}>
-                    <div className="cli-edit-field span-2">
-                        <label className="cli-edit-label">Nombre</label>
-                        <input autoFocus className="cli-edit-input" value={draft.nombre}
-                            onChange={e => setDraft(d => ({ ...d, nombre: e.target.value }))} />
-                    </div>
-                    <div className="cli-edit-field">
-                        <label className="cli-edit-label">Teléfono</label>
-                        <input className="cli-edit-input" value={draft.telefono}
-                            onChange={e => setDraft(d => ({ ...d, telefono: e.target.value }))} />
-                    </div>
-                    <div className="cli-edit-field span-2">
-                        <label className="cli-edit-label">Instagram</label>
-                        <input
-                            className="cli-edit-input"
-                            value={draft.instagram}
-                            placeholder="@usuario"
-                            onChange={e => setDraft(d => ({ ...d, instagram: e.target.value }))}
-                        />
-                    </div>
-
-                    <div className="cli-edit-field span-2">
-                        <label className="cli-edit-label">Dirección</label>
-                        <input className="cli-edit-input" value={draft.direccion}
-                            onChange={e => setDraft(d => ({ ...d, direccion: e.target.value }))} />
-                    </div>
-                    <div className="cli-edit-field span-2">
-                        <label className="cli-edit-label">Notas</label>
-                        <input className="cli-edit-input" value={draft.notas}
-                            onChange={e => setDraft(d => ({ ...d, notas: e.target.value }))} />
-                    </div>
-                </div>
-            ) : (
-                <>
-                    {(cliente.telefono || cliente.direccion || cliente.instagram) && (
-                        <div className="cli-card-contacto">
-                            {cliente.instagram && (
-                                <span className="cli-contacto-row">
-                                    <span className="cli-contacto-icon">📸</span>{cliente.instagram}
-                                </span>
-                            )}
-                            {cliente.telefono && (
-                                <span className="cli-contacto-row">
-                                    <span className="cli-contacto-icon">📞</span>{cliente.telefono}
-                                </span>
-                            )}
-                            {cliente.direccion && (
-                                <span className="cli-contacto-row">
-                                    <span className="cli-contacto-icon">📍</span>{cliente.direccion}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                    <div className="cli-card-bottom">
-                        <span className="cli-card-pedidos">
-                            {pedidosCount > 0 ? `${pedidosCount} pedido${pedidosCount !== 1 ? 's' : ''}` : 'Sin pedidos'}
-                        </span>
-                        {fecha && <span className="cli-card-fecha">desde {fecha}</span>}
-                    </div>
-                </>
-            )}
-        </article>
-    )
-}
-
-function FormularioCliente({ onCrear, creando }) {
-    const [nombre, setNombre] = useState('')
-    const [telefono, setTelefono] = useState('')
-    const [direccion, setDireccion] = useState('')
-    const [notas, setNotas] = useState('')
-    const [instagram, setInstagram] = useState('')
-
-    function handleCrear() {
-        if (!nombre.trim()) return
-        onCrear({ nombre, telefono, direccion, notas, instagram }, () => {
-            setNombre('')
-            setTelefono('')
-            setDireccion('')
-            setNotas('')
-            setInstagram('')
-        })
-    }
-
-    return (
-        <aside className="cli-form-panel">
-            <h2 className="cli-panel-title">Agregar cliente</h2>
-
-            {[
-                { label: 'Nombre *', val: nombre, set: setNombre, ph: 'Nombre completo', type: 'text' },
-                {
-                    label: 'Instagram',
-                    val: instagram,
-                    set: setInstagram,
-                    ph: '@usuario',
-                    type: 'text'
-                },
-                { label: 'Teléfono', val: telefono, set: setTelefono, ph: 'Ej. 11 1234-5678', type: 'tel' },
-                { label: 'Dirección', val: direccion, set: setDireccion, ph: 'Calle y número', type: 'text' },
-                { label: 'Notas', val: notas, set: setNotas, ph: 'Preferencias, alergias…', type: 'text' },
-            ].map(({ label, val, set, ph, type }) => (
-                <div key={label} className="cli-field">
-                    <label className="cli-label-field">{label}</label>
-                    <input
-                        className="cli-input"
-                        type={type}
-                        placeholder={ph}
-                        value={val}
-                        onChange={e => set(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && nombre.trim() && handleCrear()}
-                    />
-                </div>
-            ))}
-
-            <button
-                className="cli-btn-create"
-                onClick={handleCrear}
-                disabled={!nombre.trim() || creando}
-            >
-                {creando ? 'Guardando…' : 'Crear cliente'}
-            </button>
-        </aside>
-    )
-}
-
-function Paginacion({ pagina, total, onChange, desde, hasta, totalItems }) {
-    if (total <= 1) return null
-    const paginas = []
-    for (let i = 1; i <= total; i++) {
-        if (i === 1 || i === total || Math.abs(i - pagina) <= 2) paginas.push(i)
-        else if (paginas[paginas.length - 1] !== '…') paginas.push('…')
-    }
-    return (
-        <div className="cli-paginacion">
-            <button className="cli-pag-btn" disabled={pagina === 1} onClick={() => onChange(pagina - 1)}>← Ant</button>
-            {paginas.map((p, i) => p === '…'
-                ? <span key={`e${i}`} className="cli-pag-info">…</span>
-                : <button key={p} className={`cli-pag-btn${p === pagina ? ' activo' : ''}`} onClick={() => onChange(p)}>{p}</button>
-            )}
-            <button className="cli-pag-btn" disabled={pagina === total} onClick={() => onChange(pagina + 1)}>Sig →</button>
-            <span className="cli-pag-info">{desde}–{hasta} de {totalItems}</span>
-        </div>
-    )
-}
+const comandosClientes = [
+    { teclas: 'Ctrl + H', accion: 'Buscar clientes' },
+    { teclas: 'Ctrl + M', accion: 'Cambiar Cards / Tabla' },
+    { teclas: 'Ctrl + E', accion: 'Exportar sheet' },
+    { teclas: 'Ctrl + I', accion: 'Importar sheet' },
+    { teclas: 'Ctrl + Z', accion: 'Deshacer eliminacion' },
+    { teclas: 'Ctrl + /', accion: 'Ver comandos' },
+    { teclas: 'Esc', accion: 'Cerrar ventanas' }
+]
 
 function Clientes() {
     const [clientes, setClientes] = useState([])
@@ -218,6 +34,28 @@ function Clientes() {
     const [busqueda, setBusqueda] = useState('')
     const [orden, setOrden] = useState('reciente')
     const [pagina, setPagina] = useState(1)
+    const [editandoId, setEditandoId] = useState(null)
+    const [vista, setVista] = useState('cards')
+    const [comandosAbiertos, setComandosAbiertos] = useState(false)
+    const [importando, setImportando] = useState(false)
+    const [resultadoImportacion, setResultadoImportacion] = useState('')
+    const [toast, setToast] = useState(null)
+    const buscadorRef = useRef(null)
+    const inputImportRef = useRef(null)
+
+    const {
+        toastDeshacer,
+        confirmarAccionPendiente,
+        deshacerEliminacion,
+        eliminarItem,
+        limpiarItems,
+    } = useEliminacionDeshacer({
+        nombreSingular: 'Cliente',
+        nombrePlural: 'clientes',
+        setItems: setClientes,
+        eliminarEnServidor: cliente => api.delete(`/clientes/${cliente.id}`),
+        onError: mostrarError,
+    })
 
     const pedidosPorCliente = useMemo(() =>
         pedidos.reduce((acc, p) => {
@@ -227,6 +65,7 @@ function Clientes() {
 
     const procesados = useMemo(() => {
         let lista = [...clientes]
+
         if (busqueda.trim()) {
             const q = busqueda.toLowerCase()
             lista = lista.filter(c =>
@@ -234,16 +73,23 @@ function Clientes() {
                 (c.telefono || '').includes(q)
             )
         }
+
         switch (orden) {
-            case 'az': lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es')); break
-            case 'za': lista.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || '', 'es')); break
-            case 'mas-pedidos': lista.sort((a, b) => (pedidosPorCliente[b.id] || 0) - (pedidosPorCliente[a.id] || 0)); break
-            default: break
+            case 'az':
+                lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'))
+                break
+            case 'za':
+                lista.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || '', 'es'))
+                break
+            case 'mas-pedidos':
+                lista.sort((a, b) => (pedidosPorCliente[b.id] || 0) - (pedidosPorCliente[a.id] || 0))
+                break
+            default:
+                break
         }
+
         return lista
     }, [clientes, busqueda, orden, pedidosPorCliente])
-
-    useEffect(() => { setPagina(1) }, [busqueda, orden])
 
     const totalPaginas = Math.ceil(procesados.length / POR_PAGINA)
     const paginaReal = Math.min(pagina, Math.max(totalPaginas, 1))
@@ -251,12 +97,20 @@ function Clientes() {
     const hasta = Math.min(desde + POR_PAGINA, procesados.length)
     const paginados = procesados.slice(desde, hasta)
 
-    async function obtener() {
+    async function obtener(signal) {
         try {
             const [rCli, rPed] = await Promise.all([api.get('/clientes'), api.get('/pedidos')])
+            if (signal?.aborted) return
             setClientes(rCli.data?.data ?? rCli.data ?? [])
             setPedidos(rPed.data?.data ?? rPed.data ?? [])
-        } catch (e) { console.log(e) }
+        } catch (e) {
+            mostrarError('No se pudieron cargar los clientes.')
+        }
+    }
+
+    function mostrarError(mensaje) {
+        setToast({ mensaje, tipo: 'error' })
+        window.setTimeout(() => setToast(null), 3500)
     }
 
     async function crearCliente(datos, onExito) {
@@ -265,25 +119,166 @@ function Clientes() {
             await api.post('/clientes', datos)
             await obtener()
             onExito()
-        } catch (e) { console.log(e) }
-        finally { setCreando(false) }
+        } catch (e) {
+            mostrarError('No se pudo crear el cliente.')
+        } finally {
+            setCreando(false)
+        }
     }
 
     async function editarCliente(id, datos) {
         try {
             await api.put(`/clientes/${id}`, datos)
             setClientes(prev => prev.map(c => c.id === id ? { ...c, ...datos } : c))
-        } catch (e) { console.log(e) }
+        } catch (e) {
+            mostrarError('No se pudo editar el cliente.')
+        }
     }
 
     async function eliminarCliente(id) {
-        try {
-            await api.delete(`/clientes/${id}`)
-            setClientes(prev => prev.filter(c => c.id !== id))
-        } catch (e) { console.log(e) }
+        const index = clientes.findIndex(cliente => String(cliente.id) === String(id))
+        await eliminarItem(clientes[index], index)
     }
 
-    useEffect(() => { obtener() }, [])
+    async function limpiarClientes() {
+        setEditandoId(null)
+        await limpiarItems(clientes)
+    }
+
+    function exportarClientesSheet() {
+        const filas = procesados.map(cliente => [
+            cliente.nombre,
+            cliente.telefono || '',
+            cliente.instagram || '',
+            cliente.direccion || '',
+            cliente.notas || '',
+            pedidosPorCliente[cliente.id] || 0
+        ])
+
+        const encabezados = ['Cliente', 'Telefono', 'Instagram', 'Direccion', 'Notas', 'Pedidos']
+        exportarCsv({
+            nombreArchivo: `clientes-${new Date().toISOString().slice(0, 10)}.csv`,
+            encabezados,
+            filas,
+        })
+    }
+
+    function parsearTablaClientes(contenido) {
+        const { filas, indices } = parsearTablaCsv(contenido)
+
+        return filas
+            .map(fila => {
+                const nombre = obtenerValorFila(fila, indices, ['cliente', 'nombre']).trim()
+                const telefono = obtenerValorFila(fila, indices, ['telefono', 'tel']).trim()
+                const instagram = obtenerValorFila(fila, indices, ['instagram', 'ig']).trim()
+                const direccion = obtenerValorFila(fila, indices, ['direccion']).trim()
+                const notas = obtenerValorFila(fila, indices, ['notas', 'nota']).trim()
+
+                return { nombre, telefono, instagram, direccion, notas }
+            })
+            .filter(cliente => cliente.nombre && (cliente.telefono || cliente.instagram))
+    }
+
+    async function importarClientesSheet(e) {
+        const archivo = e.target.files?.[0]
+        e.target.value = ''
+
+        if (!archivo) return
+
+        setImportando(true)
+        setResultadoImportacion('')
+
+        try {
+            const contenido = await archivo.text()
+            const clientesImportados = parsearTablaClientes(contenido)
+
+            if (clientesImportados.length === 0) {
+                setResultadoImportacion('No se encontraron clientes validos.')
+                return
+            }
+
+            for (const cliente of clientesImportados) {
+                await api.post('/clientes', cliente)
+            }
+
+            await obtener()
+            setResultadoImportacion(`${clientesImportados.length} clientes importados.`)
+        } catch (error) {
+            mostrarError('No se pudo importar la tabla.')
+            setResultadoImportacion('No se pudo importar la tabla.')
+        } finally {
+            setImportando(false)
+        }
+    }
+
+    useEffect(() => {
+        const controller = new AbortController()
+        Promise.resolve().then(() => obtener(controller.signal))
+        return () => controller.abort()
+    }, [])
+
+    function handleBusquedaChange(value) {
+        setBusqueda(value)
+        setPagina(1)
+    }
+
+    function handleOrdenChange(event) {
+        setOrden(event.target.value)
+        setPagina(1)
+    }
+
+    useEffect(() => {
+        function enfocarBuscador() {
+            buscadorRef.current?.focus()
+            buscadorRef.current?.select?.()
+        }
+
+        function handleKeyDown(e) {
+            const tecla = e.key.toLowerCase()
+            const conCtrl = e.ctrlKey || e.metaKey
+
+            if (e.key === 'Escape') {
+                if (comandosAbiertos) setComandosAbiertos(false)
+                if (resultadoImportacion) setResultadoImportacion('')
+                return
+            }
+
+            if (!conCtrl) return
+
+            if (tecla === 'h') {
+                e.preventDefault()
+                enfocarBuscador()
+            }
+
+            if (tecla === 'm') {
+                e.preventDefault()
+                setVista(v => v === 'cards' ? 'tabla' : 'cards')
+            }
+
+            if (tecla === 'e') {
+                e.preventDefault()
+                if (procesados.length > 0) exportarClientesSheet()
+            }
+
+            if (tecla === 'i') {
+                e.preventDefault()
+                if (!importando) inputImportRef.current?.click()
+            }
+
+            if (tecla === 'z') {
+                e.preventDefault()
+                deshacerEliminacion()
+            }
+
+            if (e.key === '/') {
+                e.preventDefault()
+                setComandosAbiertos(true)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [comandosAbiertos, importando, procesados, resultadoImportacion])
 
     const hayFiltros = busqueda.trim()
 
@@ -291,8 +286,8 @@ function Clientes() {
         <div className="cli-contenedor">
             <header className="cli-header">
                 <div>
-                    <p className="cli-label">Sistema de gestión</p>
-                    <h1 className="cli-title">SRM <em>Clientes</em></h1>
+                    <p className="cli-label">Sistema de gestion</p>
+                    <h1 className="cli-title"><em>Clientes</em></h1>
                 </div>
                 <span className="cli-header-count">
                     {clientes.length} {clientes.length === 1 ? 'cliente' : 'clientes'}
@@ -300,19 +295,23 @@ function Clientes() {
             </header>
 
             <div className="cli-toolbar">
-                <div className="cli-search-wrap">
-                    <span className="cli-search-icon">⌕</span>
-                    <input
-                        placeholder="Buscar por nombre o teléfono…"
-                        value={busqueda}
-                        onChange={e => setBusqueda(e.target.value)}
-                    />
-                </div>
-                <select className="cli-select" value={orden} onChange={e => setOrden(e.target.value)}>
-                    <option value="reciente">Más reciente</option>
-                    <option value="az">A → Z</option>
-                    <option value="za">Z → A</option>
-                    <option value="mas-pedidos">Más pedidos</option>
+                <Comandos
+                    abierto={comandosAbiertos}
+                    setAbierto={setComandosAbiertos}
+                    comandos={comandosClientes}
+                />
+
+                <Buscador
+                    inputRef={buscadorRef}
+                    value={busqueda}
+                    onChange={handleBusquedaChange}
+                    placeholder="Buscar por nombre o telefono..."
+                />
+                <select className="cli-select" value={orden} onChange={handleOrdenChange}>
+                    <option value="reciente">Mas reciente</option>
+                    <option value="az">A - Z</option>
+                    <option value="za">Z - A</option>
+                    <option value="mas-pedidos">Mas pedidos</option>
                 </select>
                 {hayFiltros && (
                     <span className="cli-results-label">{procesados.length} resultado{procesados.length !== 1 ? 's' : ''}</span>
@@ -332,20 +331,55 @@ function Clientes() {
                         )}
                     </h2>
 
+                    <div className="catalogo-actions">
+                        <LimpiarTodo
+                            onLimpiar={limpiarClientes}
+                            disabled={clientes.length === 0}
+                            titulo="Eliminar todos los clientes"
+                        />
+
+                        <VistaSwitch vista={vista} setVista={setVista} />
+                        <ImportExport
+                            onExportar={exportarClientesSheet}
+                            onImportar={importarClientesSheet}
+                            importando={importando}
+                            exportDisabled={procesados.length === 0}
+                            inputRef={inputImportRef}
+                            titulo="Importar o exportar clientes"
+                        />
+
+                    </div>
+
+                    {resultadoImportacion && (
+                        <p className="import-sheet-result">{resultadoImportacion}</p>
+                    )}
+
                     {procesados.length === 0
-                        ? <p className="cli-empty">Ningún cliente encontrado.</p>
+                        ? <p className="cli-empty">Ningun cliente encontrado.</p>
                         : <>
-                            <div className="cli-grid">
-                                {paginados.map(c => (
-                                    <TarjetaCliente
-                                        key={c.id}
-                                        cliente={c}
-                                        onEliminar={eliminarCliente}
-                                        onEditar={editarCliente}
-                                        pedidosCount={pedidosPorCliente[c.id] || 0}
-                                    />
-                                ))}
-                            </div>
+                            {vista === 'tabla' ? (
+                                <TablaClientes
+                                    clientes={paginados}
+                                    onEliminar={eliminarCliente}
+                                    onEditar={editarCliente}
+                                    pedidosPorCliente={pedidosPorCliente}
+                                />
+                            ) : (
+                                <div className="cli-grid">
+                                    {paginados.map(c => (
+                                        <TarjetaCliente
+                                            key={c.id}
+                                            cliente={c}
+                                            onEliminar={eliminarCliente}
+                                            onEditar={editarCliente}
+                                            pedidosCount={pedidosPorCliente[c.id] || 0}
+                                            editando={String(editandoId) === String(c.id)}
+                                            onIniciarEdicion={() => setEditandoId(c.id)}
+                                            onCerrarEdicion={() => setEditandoId(null)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                             <Paginacion
                                 pagina={paginaReal}
                                 total={totalPaginas}
@@ -358,6 +392,11 @@ function Clientes() {
                     }
                 </section>
             </div>
+            <ToastDeshacer
+                mensaje={toastDeshacer?.mensaje}
+                onDeshacer={deshacerEliminacion}
+            />
+            <Toast mensaje={toast?.mensaje} tipo={toast?.tipo} />
         </div>
     )
 }

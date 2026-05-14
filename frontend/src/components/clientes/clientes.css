@@ -117,6 +117,11 @@ body {
     color: var(--border);
 }
 
+.danger-switch {
+    position: relative;
+    right: 37%;
+}
+
 .cli-select {
     padding: 0.65rem 2.2rem 0.65rem 0.9rem;
     background: var(--white-grey);
@@ -129,9 +134,6 @@ body {
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23c3bfb6' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
     transition: border-color 0.2s;
 }
 
@@ -244,6 +246,21 @@ body {
     gap: 0.75rem;
 }
 
+.cli-list-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    margin: -0.25rem 0 1rem;
+    flex-wrap: wrap;
+}
+
+.cli-list-actions .vista-switch,
+.cli-list-actions .sheet-switch,
+.cli-list-actions .danger-switch {
+    flex-shrink: 0;
+}
+
 .cli-badge {
     font-size: 10px;
     font-weight: 500;
@@ -265,6 +282,77 @@ body {
     border: 1px dashed var(--border);
     border-radius: 4px;
     color: var(--black);
+}
+
+.cli-tabla-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--white-grey);
+}
+
+.cli-tabla {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+}
+
+.cli-tabla th,
+.cli-tabla td {
+    padding: 0.65rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+    font-size: 12px;
+}
+
+.cli-tabla th {
+    color: var(--black);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: var(--white);
+}
+
+.cli-tabla tbody tr {
+    transition: background 0.2s;
+}
+
+.cli-tabla tbody tr:hover {
+    background: var(--white);
+}
+
+.cli-tabla tbody tr.editando {
+    background: rgba(255, 78, 117, 0.06);
+}
+
+.cli-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.cli-tabla-input {
+    width: 100%;
+    min-width: 110px;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+}
+
+.cli-tabla-input:focus {
+    border-color: var(--pink-light);
+    outline: none;
+}
+
+.cli-tabla-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.3rem;
+    white-space: nowrap;
 }
 
 .cli-grid {
@@ -331,6 +419,9 @@ body {
 .cli-card-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
 .cli-card-nombre {
@@ -361,25 +452,100 @@ body {
 .cli-card-contacto {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 0.35rem;
 }
 
 .cli-contacto-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.4rem;
     font-size: 11px;
     font-weight: 300;
     color: var(--black);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .cli-contacto-icon {
     font-size: 10px;
     color: var(--pink-light);
     flex-shrink: 0;
+}
+
+.cli-contacto-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cli-contacto-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.cli-contacto-actions button {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--black);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.cli-contacto-actions button:hover {
+    border-color: var(--pink-light);
+    color: var(--pink-light);
+    background: var(--white);
+}
+
+.btn-icon.btn-note.activo,
+.btn-icon.btn-note:hover {
+    border-color: var(--pink-light);
+    color: var(--pink-light);
+}
+
+.cli-copy-feedback {
+    margin-top: 0.45rem;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pink-light);
+}
+
+.cli-notas {
+    margin-top: 0.55rem;
+    padding: 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--white);
+}
+
+.cli-notas span {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pink-light);
+}
+
+.cli-notas p {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--black);
 }
 
 .cli-card-bottom {
@@ -537,5 +703,22 @@ body {
 
     .cli-form-panel {
         position: static;
+    }
+
+    .cli-list-actions {
+        justify-content: stretch;
+        gap: 0.5rem;
+    }
+
+    .cli-list-actions .vista-switch,
+    .cli-list-actions .sheet-switch,
+    .cli-list-actions .danger-switch {
+        width: 100%;
+    }
+
+    .cli-list-actions .vista-switch button,
+    .cli-list-actions .sheet-switch button,
+    .cli-list-actions .danger-switch button {
+        flex: 1;
     }
 }

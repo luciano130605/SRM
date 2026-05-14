@@ -1,0 +1,18 @@
+.btn-cancel-card {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--black);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.btn-cancel-card:hover {
+    border-color: var(--borderHover);
+    background: var(--white);
+}

@@ -3,40 +3,34 @@ import Productos from "../src/components/productos/productos"
 import Clientes from "./components/clientes/clientes"
 import Dashboard from "./components/dashboard/dashboard"
 import Pedidos from "./components/pedidos/pedidos"
+import Header from "./components/header/header"
+import "./App.css"
 
 function App() {
-    const [vista, setVista] = useState('productos')
+    const [vista, setVista] = useState('dashboard')
 
     const renderVista = () => {
         switch (vista) {
+            case 'dashboard':
+                return <Dashboard />
             case 'productos':
                 return <Productos />
             case 'clientes':
                 return <Clientes />
-            case 'dashboard':
-                return <Dashboard />
             case 'pedidos':
                 return <Pedidos />
             default:
-                return <Productos />
+                return <Dashboard />
         }
     }
 
     return (
-        <div>
-            <select
-                value={vista}
-                onChange={(e) => setVista(e.target.value)}
-            >
-                <option value="productos">Productos</option>
-                <option value="clientes">Clientes</option>
-                <option value="dashboard">Dashboard</option>
-                <option value="pedidos">Pedidos</option>
-            </select>
+        <div className="app-shell">
+            <Header vista={vista} setVista={setVista} />
 
-            <div style={{ marginTop: '20px' }}>
+            <main className="app-main">
                 {renderVista()}
-            </div>
+            </main>
         </div>
     )
 }
