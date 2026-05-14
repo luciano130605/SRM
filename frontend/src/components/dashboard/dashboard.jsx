@@ -9,7 +9,7 @@ import ClientesActivos from './clientes-activos'
 import Toast from '../toast/toast'
 
 
-function Dashboard() {
+export default function Dashboard() {
     const [pedidos, setPedidos] = useState([])
     const [clientes, setClientes] = useState([])
     const [productos, setProductos] = useState([])
@@ -75,4 +75,3 @@ function Dashboard() {
     )
 }
 
-export default Dashboard
