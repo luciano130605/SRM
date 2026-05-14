@@ -26,7 +26,7 @@ const comandosPedidos = [
     { teclas: 'Esc', accion: 'Cerrar ventanas' }
 ]
 
-function Pedidos() {
+export default function Pedidos() {
     const [pedidos, setPedidos] = useState([])
     const [clientes, setClientes] = useState([])
     const [productos, setProductos] = useState([])
@@ -443,4 +443,3 @@ function Pedidos() {
     )
 }
 
-export default Pedidos
