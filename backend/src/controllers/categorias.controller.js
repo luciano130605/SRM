@@ -1,139 +1,91 @@
-const { categorias, guardarCategorias } = require('../data/data')
-const { v4: uuidv4 } = require('uuid')
+const supabase = require('../supabase')
 
-function obtenerCategorias(req, res) {
-    res.status(200).json({
-        ok: true,
-        data: categorias.sort((a, b) => (a.orden || 0) - (b.orden || 0))
-    })
+async function obtenerCategorias(req, res) {
+    const { data, error } = await supabase
+        .from('categorias')
+        .select('*')
+        .order('orden', { ascending: true })
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    res.status(200).json({ ok: true, data })
 }
 
-function crearCategoria(req, res) {
-    try {
-        const { nombre } = req.body
+async function crearCategoria(req, res) {
+    const { nombre } = req.body
 
-        if (!nombre) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "Falta el nombre"
-            })
-        }
+    if (!nombre) return res.status(400).json({ ok: false, mensaje: 'Falta el nombre' })
 
-        const existe = categorias.find(
-            c => c.nombre.toLowerCase() === nombre.toLowerCase()
-        )
+    // Obtener el max orden actual
+    const { data: todas } = await supabase
+        .from('categorias')
+        .select('orden')
+        .order('orden', { ascending: false })
+        .limit(1)
 
-        if (existe) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "La categoría ya existe"
-            })
-        }
+    const nuevoOrden = todas && todas.length > 0 ? todas[0].orden + 1 : 1
 
-        const nuevaCategoria = {
-            id: uuidv4(),
-            nombre,
-            orden: categorias.length
-                ? Math.max(...categorias.map(c => c.orden || 0)) + 1
-                : 1
-        }
+    const { data, error } = await supabase
+        .from('categorias')
+        .insert([{ nombre, orden: nuevoOrden }])
+        .select()
+        .single()
 
-        categorias.push(nuevaCategoria)
-        guardarCategorias()
-
-        res.status(200).json({
-            ok: true,
-            data: nuevaCategoria
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            mensaje: "Error servidor"
-        })
+    if (error) {
+        if (error.code === '23505') return res.status(400).json({ ok: false, mensaje: 'La categoría ya existe' })
+        return res.status(500).json({ ok: false, mensaje: error.message })
     }
+
+    res.status(201).json({ ok: true, data })
 }
 
-function eliminarCategoria(req, res) {
-    try {
-        const { id } = req.params
+async function eliminarCategoria(req, res) {
+    const { id } = req.params
 
-        const index = categorias.findIndex(c => String(c.id) === id)
+    const { error } = await supabase
+        .from('categorias')
+        .delete()
+        .eq('id', id)
 
-        if (index === -1) {
-            return res.status(404).json({
-                ok: false,
-                mensaje: "Categoría no encontrada"
-            })
-        }
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
 
-        categorias.splice(index, 1)
-        categorias.forEach((categoria, index) => {
-            categoria.orden = index + 1
-        })
-        guardarCategorias()
+    // Reordenar las que quedan
+    const { data: restantes } = await supabase
+        .from('categorias')
+        .select('id')
+        .order('orden', { ascending: true })
 
-        res.status(200).json({
-            ok: true,
-            mensaje: "Categoría eliminada"
-        })
+    if (restantes && restantes.length > 0) {
+        const updates = restantes.map((cat, index) => ({
+            id: cat.id,
+            orden: index + 1
+        }))
 
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            mensaje: "Error servidor"
-        })
+        await supabase.from('categorias').upsert(updates)
     }
+
+    res.status(200).json({ ok: true, mensaje: 'Categoría eliminada' })
 }
 
-function reordenarCategorias(req, res) {
-    try {
-        const { orden } = req.body
+async function reordenarCategorias(req, res) {
+    const { orden } = req.body
 
-        if (!Array.isArray(orden)) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "Falta el orden"
-            })
-        }
-
-        const idsActuales = categorias.map(c => String(c.id))
-        const idsRecibidos = orden.map(id => String(id))
-        const mismosIds =
-            idsActuales.length === idsRecibidos.length &&
-            idsActuales.every(id => idsRecibidos.includes(id))
-
-        if (!mismosIds) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "El orden no coincide con las categorias existentes"
-            })
-        }
-
-        orden.forEach((id, index) => {
-            const categoria = categorias.find(c => String(c.id) === String(id))
-            categoria.orden = index + 1
-        })
-
-        categorias.sort((a, b) => (a.orden || 0) - (b.orden || 0))
-        guardarCategorias()
-
-        res.status(200).json({
-            ok: true,
-            data: categorias
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            mensaje: "Error servidor"
-        })
+    if (!Array.isArray(orden)) {
+        return res.status(400).json({ ok: false, mensaje: 'Falta el orden' })
     }
+
+    const updates = orden.map((id, index) => ({ id, orden: index + 1 }))
+
+    const { error } = await supabase.from('categorias').upsert(updates)
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    const { data } = await supabase
+        .from('categorias')
+        .select('*')
+        .order('orden', { ascending: true })
+
+    res.status(200).json({ ok: true, data })
 }
 
-module.exports = {
-    obtenerCategorias,
-    crearCategoria,
-    reordenarCategorias,
-    eliminarCategoria
-}
+module.exports = { obtenerCategorias, crearCategoria, reordenarCategorias, eliminarCategoria }

@@ -1,6 +1,8 @@
 .danger-switch {
     display: inline-flex;
     padding: 3px;
+    position: relative;
+    flex-shrink: 0;
     border: 1px solid var(--border);
     border-radius: 5px;
     background: var(--white-grey);

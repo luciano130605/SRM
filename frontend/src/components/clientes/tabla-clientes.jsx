@@ -3,7 +3,7 @@ import Edit from "../../icons/Edit"
 import Save from "../../icons/Save"
 import X from "../../icons/X"
 
-export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosPorCliente }) {
+export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosPorCliente, metodos = [] }) {
     const [editandoId, setEditandoId] = useState(null)
     const [draft, setDraft] = useState({})
 
@@ -11,10 +11,9 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
         setEditandoId(cliente.id)
         setDraft({
             nombre: cliente.nombre || '',
-            telefono: cliente.telefono || '',
-            instagram: cliente.instagram || '',
             direccion: cliente.direccion || '',
             notas: cliente.notas || '',
+            contactos: cliente.contactos ?? {},
         })
     }
 
@@ -24,9 +23,17 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
     }
 
     async function guardarEdicion(id) {
-        if (!draft.nombre?.trim() || (!draft.telefono?.trim() && !draft.instagram?.trim())) return
+        if (!draft.nombre?.trim()) return
         await onEditar(id, draft)
         cancelarEdicion()
+    }
+
+    function setContactoDraft(metodId, index, valor) {
+        setDraft(d => {
+            const arr = [...(d.contactos?.[metodId] ?? [''])]
+            arr[index] = valor
+            return { ...d, contactos: { ...d.contactos, [metodId]: arr } }
+        })
     }
 
     function handleDraftKey(e, id) {
@@ -44,9 +51,8 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                 <thead>
                     <tr>
                         <th>Cliente</th>
-                        <th>Telefono</th>
-                        <th>Instagram</th>
-                        <th>Direccion</th>
+                        {metodos.map(m => <th key={m.id}>{m.icono} {m.nombre}</th>)}
+                        <th>Dirección</th>
                         <th>Pedidos</th>
                         <th aria-label="Acciones" />
                     </tr>
@@ -69,26 +75,36 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                                         />
                                     ) : cliente.nombre}
                                 </td>
-                                <td data-label="Telefono">
-                                    {editando ? (
-                                        <input
-                                            className="cli-tabla-input"
-                                            value={draft.telefono}
-                                            onChange={e => setDraft(d => ({ ...d, telefono: e.target.value }))}
-                                            onKeyDown={e => handleDraftKey(e, cliente.id)}
-                                        />
-                                    ) : cliente.telefono || '-'}
-                                </td>
-                                <td data-label="Instagram">
-                                    {editando ? (
-                                        <input
-                                            className="cli-tabla-input"
-                                            value={draft.instagram}
-                                            onChange={e => setDraft(d => ({ ...d, instagram: e.target.value }))}
-                                            onKeyDown={e => handleDraftKey(e, cliente.id)}
-                                        />
-                                    ) : cliente.instagram || '-'}
-                                </td>
+
+                                {metodos.map(metodo => {
+                                    const vals = editando
+                                        ? (draft.contactos?.[metodo.id] ?? [''])
+                                        : (() => {
+                                            const v = cliente.contactos?.[metodo.id] ?? []
+                                            if (!v.length && metodo.id === 'telefono') return cliente.telefono ? [cliente.telefono] : []
+                                            if (!v.length && metodo.id === 'instagram') return cliente.instagram ? [cliente.instagram] : []
+                                            return v
+                                        })()
+
+                                    return (
+                                        <td key={metodo.id} data-label={metodo.nombre}>
+                                            {editando
+                                                ? vals.map((val, i) => (
+                                                    <input
+                                                        key={i}
+                                                        className="cli-tabla-input"
+                                                        value={val}
+                                                        placeholder={`${metodo.nombre}...`}
+                                                        onChange={e => setContactoDraft(metodo.id, i, e.target.value)}
+                                                        onKeyDown={e => handleDraftKey(e, cliente.id)}
+                                                    />
+                                                ))
+                                                : vals.length ? vals.join(' · ') : '-'
+                                            }
+                                        </td>
+                                    )
+                                })}
+
                                 <td data-label="Direccion">
                                     {editando ? (
                                         <input
@@ -99,27 +115,17 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                                         />
                                     ) : cliente.direccion || '-'}
                                 </td>
-                                <td data-label="Pedidos">
-                                    {pedidosCount}
-                                </td>
+                                <td data-label="Pedidos">{pedidosCount}</td>
                                 <td className="cli-tabla-actions">
                                     {editando ? (
                                         <>
-                                            <button className="btn-icon btn-save" onClick={() => guardarEdicion(cliente.id)} title="Guardar">
-                                                <Save />
-                                            </button>
-                                            <button className="btn-cancel-card" onClick={cancelarEdicion} title="Cancelar">
-                                                <X />
-                                            </button>
+                                            <button className="btn-icon btn-save" onClick={() => guardarEdicion(cliente.id)} title="Guardar"><Save /></button>
+                                            <button className="btn-cancel-card" onClick={cancelarEdicion} title="Cancelar"><X /></button>
                                         </>
                                     ) : (
                                         <>
-                                            <button className="btn-icon btn-edit" onClick={() => iniciarEdicion(cliente)} title="Editar">
-                                                <Edit />
-                                            </button>
-                                            <button className="btn-icon btn-delete" onClick={() => onEliminar(cliente.id)} title="Eliminar">
-                                                <X />
-                                            </button>
+                                            <button className="btn-icon btn-edit" onClick={() => iniciarEdicion(cliente)} title="Editar"><Edit /></button>
+                                            <button className="btn-icon btn-delete" onClick={() => onEliminar(cliente.id)} title="Eliminar"><X /></button>
                                         </>
                                     )}
                                 </td>

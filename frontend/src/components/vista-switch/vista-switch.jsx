@@ -1,22 +1,23 @@
 import "./vista-switch.css"
 
-export default function VistaSwitch({ vista, setVista }) {
+const opcionesDefault = [
+    { id: 'cards', label: 'Cards' },
+    { id: 'tabla', label: 'Tabla' },
+]
+
+export default function VistaSwitch({ vista, setVista, opciones = opcionesDefault, ariaLabel = 'Cambiar vista' }) {
     return (
-        <div className="vista-switch" aria-label="Cambiar vista">
-            <button
-                className={vista === 'cards' ? 'activo' : ''}
-                onClick={() => setVista('cards')}
-                type="button"
-            >
-                Cards
-            </button>
-            <button
-                className={vista === 'tabla' ? 'activo' : ''}
-                onClick={() => setVista('tabla')}
-                type="button"
-            >
-                Tabla
-            </button>
+        <div className="vista-switch" aria-label={ariaLabel}>
+            {opciones.map(opcion => (
+                <button
+                    key={opcion.id}
+                    className={vista === opcion.id ? 'activo' : ''}
+                    onClick={() => setVista(opcion.id)}
+                    type="button"
+                >
+                    {opcion.label}
+                </button>
+            ))}
         </div>
     )
 }

@@ -6,12 +6,16 @@
     min-height: 58px;
     padding: 0.65rem 2rem;
     border-bottom: 1px solid var(--border);
-    background: rgba(255, 255, 247, 0.94);
-    backdrop-filter: blur(14px);
+    background: var(--white-transparente);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+}
+
+.app-header > * {
+    flex-shrink: 0;
 }
 
 .app-brand {
@@ -28,9 +32,10 @@
 .app-nav {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: .35rem;
     flex-wrap: wrap;
     justify-content: flex-end;
+    flex: 1;
 }
 
 .app-nav-btn {
@@ -48,6 +53,12 @@
     transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
+.app-nav-btn svg {
+    position: relative;
+    top: 2px;
+    gap: 10px;
+}
+
 .app-nav-btn:hover {
     border-color: var(--border);
     color: var(--pink-light);
@@ -57,6 +68,43 @@
     border-color: var(--pink);
     background: var(--pink);
     color: var(--white);
+}
+
+.app-auth {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.app-user {
+    max-width: 180px;
+    overflow: hidden;
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-login-btn {
+    min-height: 36px;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--pink);
+    border-radius: 999px;
+    background: var(--pink);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.app-login-btn:hover {
+    border-color: var(--pink-dark);
+    background: var(--pink-dark);
 }
 
 @media (max-width: 640px) {
@@ -69,5 +117,14 @@
     .app-nav {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .app-auth {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .app-user {
+        max-width: min(68vw, 260px);
     }
 }

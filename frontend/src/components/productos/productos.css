@@ -24,7 +24,6 @@ body {
   font-family: 'DM Sans', sans-serif;
   color: var(--black);
   min-height: 100vh;
-  margin-top: 50px;
 }
 
 
@@ -462,8 +461,7 @@ input[type="number"]::-webkit-inner-spin-button {
   justify-content: flex-end;
   align-items: center;
   gap: 0.6rem;
-  position: relative;
-  margin: -0.3rem 0 1rem;
+  margin: 0.3rem 0 1rem;
   flex-wrap: wrap;
 }
 
@@ -496,10 +494,6 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--white);
 }
 
-.danger-switch {
-  position: relative;
-  right: 37%;
-}
 
 
 .vista-switch,

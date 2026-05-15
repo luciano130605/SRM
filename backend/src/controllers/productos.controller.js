@@ -1,94 +1,100 @@
-const { productos } = require('../data/data')
-const { v4: uuidv4 } = require('uuid')
+const supabase = require('../supabase')
 
-function obtenerProductos(req, res) {
-    res.status(200).json({
+async function obtenerProductos(req, res) {
+    const { data, error } = await supabase
+        .from('productos')
+        .select('*, categorias(id, nombre)')
+        .order('nombre', { ascending: true })
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    // Mapear snake_case → camelCase
+    const mapped = data.map(p => ({
+        id: p.id,
+        nombre: p.nombre,
+        categoriaId: p.categoria_id,
+        categoria: p.categorias,
+        costo: p.costo,
+        precioVenta: p.precio_venta
+    }))
+
+    res.status(200).json({ ok: true, data: mapped })
+}
+
+async function crearProducto(req, res) {
+    const { nombre, categoriaId, costo, precioVenta } = req.body
+
+    if (!nombre || !precioVenta) {
+        return res.status(400).json({ ok: false, mensaje: 'Faltan datos' })
+    }
+
+    const { data, error } = await supabase
+        .from('productos')
+        .insert([{
+            nombre,
+            categoria_id: categoriaId || null,
+            costo: costo || 0,
+            precio_venta: precioVenta
+        }])
+        .select()
+        .single()
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    res.status(201).json({
         ok: true,
-        data: productos
+        data: {
+            id: data.id,
+            nombre: data.nombre,
+            categoriaId: data.categoria_id,
+            costo: data.costo,
+            precioVenta: data.precio_venta
+        }
     })
 }
 
-function crearProducto(req, res) {
-    try {
-        const { nombre, categoriaId, costo, precioVenta } = req.body
-
-        if (!nombre || !precioVenta) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "Faltan datos"
-            })
-        }
-
-        const nuevoProducto = {
-            id: uuidv4(),
-            nombre, categoriaId, costo, precioVenta
-        }
-
-        productos.push(nuevoProducto)
-
-        res.status(200).json({
-            ok: true,
-            nuevoProducto
-        })
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            mensaje: "Error servidor"
-        })
-    }
-}
-
-function eliminarProducto(req, res) {
-
-    const { id } = req.params
-
-    const indice = productos.findIndex(
-        producto => producto.id == id
-    )
-
-    if (indice === -1) {
-
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Producto no encontrado'
-        })
-    }
-
-    productos.splice(indice, 1)
-
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Producto eliminado'
-    })
-}
-
-function editarProducto(req, res) {
+async function editarProducto(req, res) {
     const { id } = req.params
     const { nombre, categoriaId, costo, precioVenta } = req.body
 
-    const indice = productos.findIndex(
-        producto => String(producto.id) === id
-    )
-
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Producto no encontrado'
+    const { data, error } = await supabase
+        .from('productos')
+        .update({
+            nombre,
+            categoria_id: categoriaId || null,
+            costo: costo || 0,
+            precio_venta: precioVenta
         })
-    }
+        .eq('id', id)
+        .select()
+        .single()
 
-    productos[indice] = {
-        ...productos[indice],
-        nombre,
-        categoriaId,
-        costo,
-        precioVenta
-    }
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+    if (!data) return res.status(404).json({ ok: false, mensaje: 'Producto no encontrado' })
 
     res.status(200).json({
         ok: true,
-        data: productos[indice]
+        data: {
+            id: data.id,
+            nombre: data.nombre,
+            categoriaId: data.categoria_id,
+            costo: data.costo,
+            precioVenta: data.precio_venta
+        }
     })
 }
 
-module.exports = { obtenerProductos, crearProducto, eliminarProducto, editarProducto }
+async function eliminarProducto(req, res) {
+    const { id } = req.params
+
+    const { error } = await supabase
+        .from('productos')
+        .delete()
+        .eq('id', id)
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    res.status(200).json({ ok: true, mensaje: 'Producto eliminado' })
+}
+
+module.exports = { obtenerProductos, crearProducto, editarProducto, eliminarProducto }

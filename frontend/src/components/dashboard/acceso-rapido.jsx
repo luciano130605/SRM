@@ -1,13 +1,3 @@
-/**
- * AccesoRapido
- *
- * Props:
- *   onNuevoPedido      () => void
- *   onAgregarProducto  () => void
- *   onAgregarCliente   () => void
- *   onVerEntregas      () => void
- */
-
 const IconPedido = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
         stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,6 +43,7 @@ export default function AccesoRapido({
     onAgregarProducto,
     onAgregarCliente,
     onVerEntregas,
+    soloBotones = false,
 }) {
     const acciones = [
         {
@@ -60,14 +51,14 @@ export default function AccesoRapido({
             desc: 'Registrar venta',
             icon: <IconPedido />,
             onClick: onNuevoPedido,
-            color: 'var(--rose)',
+            color: 'var(--pink)',
         },
         {
             label: 'Agregar producto',
-            desc: 'Al catálogo',
+            desc: 'Al catalogo',
             icon: <IconProducto />,
             onClick: onAgregarProducto,
-            color: 'var(--sage)',
+            color: 'var(--green)',
         },
         {
             label: 'Agregar cliente',
@@ -81,33 +72,39 @@ export default function AccesoRapido({
             desc: 'Pendientes hoy',
             icon: <IconEntrega />,
             onClick: onVerEntregas,
-            color: 'var(--slate)',
+            color: 'var(--black)',
         },
     ]
+
+    const botones = acciones.map(({ label, desc, icon, onClick, color }) => (
+        <button
+            key={label}
+            className="acceso-btn"
+            style={{ '--acceso-color': color }}
+            onClick={onClick}
+            type="button"
+            aria-label={label}
+        >
+            <span className="acceso-icon">{icon}</span>
+            <span className="acceso-text">
+                <span className="acceso-label">{label}</span>
+                <span className="acceso-desc">{desc}</span>
+            </span>
+        </button>
+    ))
+
+    if (soloBotones) {
+        return <div className="acceso-grid">{botones}</div>
+    }
 
     return (
         <div className="dash-panel">
             <div className="panel-head">
-                <span className="panel-head-title">Acceso rápido</span>
+                <span className="panel-head-title">Acceso rapido</span>
             </div>
 
             <div className="acceso-grid">
-                {acciones.map(({ label, desc, icon, onClick, color }) => (
-                    <button
-                        key={label}
-                        className="acceso-btn"
-                        style={{ '--acceso-color': color }}
-                        onClick={onClick}
-                        type="button"
-                        aria-label={label}
-                    >
-                        <span className="acceso-icon">{icon}</span>
-                        <span className="acceso-text">
-                            <span className="acceso-label">{label}</span>
-                            <span className="acceso-desc">{desc}</span>
-                        </span>
-                    </button>
-                ))}
+                {botones}
             </div>
         </div>
     )

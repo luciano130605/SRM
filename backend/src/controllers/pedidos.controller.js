@@ -1,68 +1,74 @@
-const {
-    pedidos,
-    productos
-} = require('../data/data')
+const supabase = require('../supabase')
 
-const { v4: uuidv4 } = require('uuid')
-
-function obtenerPedidos(req, res) {
-
-    res.status(200).json({
-        ok: true,
-        data: pedidos
-    })
+function mapPedido(p) {
+    return {
+        id: p.id,
+        clienteId: p.cliente_id,
+        cliente: p.clientes,
+        items: p.items,
+        fecha: p.fecha,
+        fechaEntrega: p.fecha_entrega,
+        total: p.total,
+        metodoPago: p.metodo_pago,
+        estado: p.estado,
+        notas: p.notas,
+        createdAt: p.created_at
+    }
 }
 
-function crearPedido(req, res) {
+async function obtenerPedidos(req, res) {
+    const { data, error } = await supabase
+        .from('pedidos')
+        .select('*, clientes(id, nombre)')
+        .order('created_at', { ascending: false })
 
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    res.status(200).json({ ok: true, data: data.map(mapPedido) })
+}
+
+async function crearPedido(req, res) {
     try {
-
         const {
-            clienteId,
-            idCliente,
-            items,
-            productosPedido,
-            estado,
-            fecha,
-            fechaEntrega,
-            total,
-            metodoPago,
-            notas,
-            observaciones
+            clienteId, idCliente,
+            items, productosPedido,
+            estado, fecha, fechaEntrega,
+            total, metodoPago,
+            notas, observaciones
         } = req.body
 
         const cliente = clienteId || idCliente
         const productosRecibidos = items || productosPedido || []
 
         if (!cliente) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Falta el cliente'
-            })
+            return res.status(400).json({ ok: false, mensaje: 'Falta el cliente' })
         }
+
+        // Obtener productos de Supabase para validar y calcular
+        const ids = productosRecibidos.map(i => i.productoId || i.idProducto)
+        const { data: productosDB, error: prodError } = await supabase
+            .from('productos')
+            .select('id, nombre, precio_venta')
+            .in('id', ids)
+
+        if (prodError) throw new Error(prodError.message)
 
         let montoTotal = parseFloat(total) || 0
 
         const productosFinales = productosRecibidos.map(item => {
             const productoId = item.productoId || item.idProducto
             const cantidad = parseInt(item.cantidad) || 1
+            const productoEncontrado = productosDB.find(p => String(p.id) === String(productoId))
 
-            const productoEncontrado = productos.find(
-                producto => String(producto.id) === String(productoId)
-            )
+            if (!productoEncontrado) throw new Error(`Producto ${productoId} no encontrado`)
 
-            if (!productoEncontrado) {
-                throw new Error('Producto no encontrado')
-            }
-
-            const precioUnitario = parseFloat(item.precioUnitario ?? productoEncontrado.precioVenta) || 0
+            const precioUnitario = parseFloat(item.precioUnitario ?? productoEncontrado.precio_venta) || 0
             const subtotal = cantidad * precioUnitario
 
             if (!total) montoTotal += subtotal
 
             return {
                 productoId,
-                idProducto: productoId,
                 nombre: item.nombre || productoEncontrado.nombre,
                 cantidad,
                 precioUnitario,
@@ -70,123 +76,92 @@ function crearPedido(req, res) {
             }
         })
 
-        const nuevoPedido = {
-            id: uuidv4(),
-            clienteId: cliente,
-            idCliente: cliente,
-            items: productosFinales,
-            productos: productosFinales,
-            fecha: fecha || fechaEntrega || new Date().toISOString().slice(0, 10),
-            createdAt: new Date().toISOString(),
-            fechaPedido: new Date().toISOString(),
-            fechaEntrega: fechaEntrega || fecha,
-            total: montoTotal,
-            montoTotal,
-            metodoPago,
-            estado: estado || 'pendiente',
-            notas: notas || observaciones || '',
-            observaciones: observaciones || notas || ''
-        }
+        const { data, error } = await supabase
+            .from('pedidos')
+            .insert([{
+                cliente_id: cliente,
+                items: productosFinales,
+                fecha: fecha || new Date().toISOString().slice(0, 10),
+                fecha_entrega: fechaEntrega || fecha || null,
+                total: montoTotal,
+                metodo_pago: metodoPago || null,
+                estado: estado || 'pendiente',
+                notas: notas || observaciones || ''
+            }])
+            .select('*, clientes(id, nombre)')
+            .single()
 
-        pedidos.push(nuevoPedido)
+        if (error) throw new Error(error.message)
 
-        res.status(201).json({
-            ok: true,
-            data: nuevoPedido
-        })
+        res.status(201).json({ ok: true, data: mapPedido(data) })
 
     } catch (error) {
-
-        res.status(500).json({
-            ok: false,
-            mensaje: error.message
-        })
+        res.status(500).json({ ok: false, mensaje: error.message })
     }
 }
 
-function editarPedido(req, res) {
+async function editarPedido(req, res) {
     const { id } = req.params
-    const indice = pedidos.findIndex(pedido => String(pedido.id) === String(id))
+    const {
+        clienteId, idCliente,
+        fecha, fechaEntrega,
+        total, montoTotal,
+        metodoPago, estado,
+        notas, observaciones,
+        items
+    } = req.body
 
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Pedido no encontrado'
-        })
-    }
+    const updates = {}
+    if (clienteId || idCliente) updates.cliente_id = clienteId || idCliente
+    if (fecha || fechaEntrega) updates.fecha = fecha || fechaEntrega
+    if (fechaEntrega) updates.fecha_entrega = fechaEntrega
+    if (total !== undefined || montoTotal !== undefined) updates.total = total ?? montoTotal
+    if (metodoPago !== undefined) updates.metodo_pago = metodoPago
+    if (estado) updates.estado = estado
+    if (notas !== undefined || observaciones !== undefined) updates.notas = notas ?? observaciones
+    if (items) updates.items = items
 
-    const datos = req.body
-    const cliente = datos.clienteId || datos.idCliente || pedidos[indice].clienteId
-    const total = datos.total ?? datos.montoTotal ?? pedidos[indice].total
-    const notas = datos.notas ?? datos.observaciones ?? pedidos[indice].notas
-    const fecha = datos.fecha ?? datos.fechaEntrega ?? pedidos[indice].fecha
+    const { data, error } = await supabase
+        .from('pedidos')
+        .update(updates)
+        .eq('id', id)
+        .select('*, clientes(id, nombre)')
+        .single()
 
-    pedidos[indice] = {
-        ...pedidos[indice],
-        ...datos,
-        clienteId: cliente,
-        idCliente: cliente,
-        fecha,
-        fechaEntrega: datos.fechaEntrega ?? fecha,
-        total,
-        montoTotal: total,
-        notas,
-        observaciones: datos.observaciones ?? notas,
-        estado: datos.estado ?? pedidos[indice].estado
-    }
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+    if (!data) return res.status(404).json({ ok: false, mensaje: 'Pedido no encontrado' })
 
-    res.status(200).json({
-        ok: true,
-        data: pedidos[indice]
-    })
+    res.status(200).json({ ok: true, data: mapPedido(data) })
 }
 
-function actualizarEstadoPedido(req, res) {
+async function actualizarEstadoPedido(req, res) {
     const { id } = req.params
     const { estado } = req.body
-    const indice = pedidos.findIndex(pedido => String(pedido.id) === String(id))
 
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Pedido no encontrado'
-        })
-    }
+    const { data, error } = await supabase
+        .from('pedidos')
+        .update({ estado })
+        .eq('id', id)
+        .select('*, clientes(id, nombre)')
+        .single()
 
-    pedidos[indice] = {
-        ...pedidos[indice],
-        estado: estado || pedidos[indice].estado
-    }
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+    if (!data) return res.status(404).json({ ok: false, mensaje: 'Pedido no encontrado' })
 
-    res.status(200).json({
-        ok: true,
-        data: pedidos[indice]
-    })
+    res.status(200).json({ ok: true, data: mapPedido(data) })
 }
 
-function eliminarPedido(req, res) {
+async function eliminarPedido(req, res) {
     const { id } = req.params
-    const indice = pedidos.findIndex(pedido => String(pedido.id) === String(id))
 
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Pedido no encontrado'
-        })
-    }
+    const { error } = await supabase
+        .from('pedidos')
+        .delete()
+        .eq('id', id)
 
-    pedidos.splice(indice, 1)
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
 
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Pedido eliminado'
-    })
+    res.status(200).json({ ok: true, mensaje: 'Pedido eliminado' })
 }
 
-module.exports = {
-    obtenerPedidos,
-    crearPedido,
-    editarPedido,
-    actualizarEstadoPedido,
-    eliminarPedido
-}
+module.exports = { obtenerPedidos, crearPedido, editarPedido, actualizarEstadoPedido, eliminarPedido }

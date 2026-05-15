@@ -68,6 +68,9 @@ export default function Formulario({
                     )
                 ))}
 
+                {children}
+
+
                 <button
                     className="form-btn-create"
                     type="submit"
@@ -77,7 +80,6 @@ export default function Formulario({
                 </button>
             </form>
 
-            {children}
         </aside>
     )
 }

@@ -2,7 +2,20 @@ import Comand from "../../icons/Comand"
 import X from "../../icons/X"
 import "./comandos.css"
 
-export default function Comandos({ abierto, setAbierto, comandos }) {
+export default function Comandos({ abierto, setAbierto, comandos, inline = false }) {
+    if (inline) {
+        return (
+            <div className="shortcuts-list shortcuts-list-inline">
+                {comandos.map(comando => (
+                    <div key={comando.teclas} className="shortcut-item">
+                        <kbd>{comando.teclas}</kbd>
+                        <span>{comando.accion}</span>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
     return (
         <>
             <div className="command-switch" aria-label="Comandos de teclado">

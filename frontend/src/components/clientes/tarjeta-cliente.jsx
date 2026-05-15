@@ -17,6 +17,7 @@ export default function TarjetaCliente({
     editando = false,
     onIniciarEdicion,
     onCerrarEdicion,
+    metodos = []
 }) {
     const [draft, setDraft] = useState({})
     const [notasAbiertas, setNotasAbiertas] = useState(false)
@@ -25,10 +26,9 @@ export default function TarjetaCliente({
     function iniciarEdicion() {
         setDraft({
             nombre: cliente.nombre || '',
-            telefono: cliente.telefono || '',
             direccion: cliente.direccion || '',
             notas: cliente.notas || '',
-            instagram: cliente.instagram || '',
+            contactos: cliente.contactos ?? {},
         })
         onIniciarEdicion()
     }
@@ -39,10 +39,18 @@ export default function TarjetaCliente({
     }
 
     async function guardar() {
-        if (!draft.nombre?.trim() || (!draft.telefono?.trim() && !draft.instagram?.trim())) return
+        if (!draft.nombre?.trim()) return
         await onEditar(cliente.id, draft)
         setDraft({})
         onCerrarEdicion()
+    }
+
+    function setContactoDraft(metodId, index, valor) {
+        setDraft(d => {
+            const arr = [...(d.contactos?.[metodId] ?? [''])]
+            arr[index] = valor
+            return { ...d, contactos: { ...d.contactos, [metodId]: arr } }
+        })
     }
 
     function onKey(e) {
@@ -137,25 +145,29 @@ export default function TarjetaCliente({
                     onChange={e => setDraft(d => ({ ...d, nombre: e.target.value }))}
                 />
             </div>
-            <div className="cli-edit-field">
-                <label className="cli-edit-label">Telefono</label>
-                <input
-                    className="cli-edit-input"
-                    value={draft.telefono}
-                    onChange={e => setDraft(d => ({ ...d, telefono: e.target.value }))}
-                />
-            </div>
+
+            {metodos.map(metodo => {
+                const valores = draft.contactos?.[metodo.id] ?? ['']
+                return (
+                    <div key={metodo.id} className="cli-edit-field span-2">
+                        <label className="cli-edit-label">
+                            {metodo.icono} {metodo.nombre}
+                        </label>
+                        {valores.map((val, i) => (
+                            <input
+                                key={i}
+                                className="cli-edit-input"
+                                value={val}
+                                placeholder={`${metodo.nombre}...`}
+                                onChange={e => setContactoDraft(metodo.id, i, e.target.value)}
+                            />
+                        ))}
+                    </div>
+                )
+            })}
+
             <div className="cli-edit-field span-2">
-                <label className="cli-edit-label">Instagram</label>
-                <input
-                    className="cli-edit-input"
-                    value={draft.instagram}
-                    placeholder="@usuario"
-                    onChange={e => setDraft(d => ({ ...d, instagram: e.target.value }))}
-                />
-            </div>
-            <div className="cli-edit-field span-2">
-                <label className="cli-edit-label">Direccion</label>
+                <label className="cli-edit-label">Dirección</label>
                 <input
                     className="cli-edit-input"
                     value={draft.direccion}
@@ -184,33 +196,55 @@ export default function TarjetaCliente({
             actions={actions}
             editContent={editContent}
         >
-            {(cliente.telefono || cliente.direccion || cliente.instagram) && (
-                <div className="cli-card-contacto">
-                    {cliente.instagram && (
-                        <span className="cli-contacto-row">
-                            <span className="cli-contacto-main">
-                                <span className="cli-contacto-icon"><Instagram /></span>{cliente.instagram}
-                            </span>
+            {(() => {
+                const tieneContactos = cliente.contactos
+                    ? Object.values(cliente.contactos).some(arr => arr?.length)
+                    : cliente.telefono || cliente.instagram
 
-                        </span>
-                    )}
-                    {cliente.telefono && (
-                        <span className="cli-contacto-row">
-                            <span className="cli-contacto-main">
-                                <span className="cli-contacto-icon"><Telefono /></span>{cliente.telefono}
-                            </span>
+                if (!tieneContactos && !cliente.direccion) return null
 
-                        </span>
-                    )}
-                    {cliente.direccion && (
-                        <span className="cli-contacto-row">
-                            <span className="cli-contacto-main">
-                                <span className="cli-contacto-icon"><Pin /></span>{cliente.direccion}
+                return (
+                    <div className="cli-card-contacto">
+                        {cliente.contactos
+                            ? metodos.map(metodo => {
+                                const vals = cliente.contactos[metodo.id]
+                                if (!vals?.length) return null
+                                return vals.map((val, i) => (
+                                    <span key={`${metodo.id}-${i}`} className="cli-contacto-row">
+                                        <span className="cli-contacto-main">
+                                            <span className="cli-contacto-icon">{metodo.icono}</span>
+                                            {val}
+                                        </span>
+                                    </span>
+                                ))
+                            })
+                            : <>
+                                {cliente.instagram && (
+                                    <span className="cli-contacto-row">
+                                        <span className="cli-contacto-main">
+                                            <span className="cli-contacto-icon"><Instagram /></span>{cliente.instagram}
+                                        </span>
+                                    </span>
+                                )}
+                                {cliente.telefono && (
+                                    <span className="cli-contacto-row">
+                                        <span className="cli-contacto-main">
+                                            <span className="cli-contacto-icon"><Telefono /></span>{cliente.telefono}
+                                        </span>
+                                    </span>
+                                )}
+                            </>
+                        }
+                        {cliente.direccion && (
+                            <span className="cli-contacto-row">
+                                <span className="cli-contacto-main">
+                                    <span className="cli-contacto-icon"><Pin /></span>{cliente.direccion}
+                                </span>
                             </span>
-                        </span>
-                    )}
-                </div>
-            )}
+                        )}
+                    </div>
+                )
+            })()}
             {copiado && (
                 <p className="cli-copy-feedback">
                     {copiado === 'telefono' ? 'Telefono copiado' : 'Instagram copiado'}

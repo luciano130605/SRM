@@ -42,6 +42,8 @@ function Clientes() {
     const [toast, setToast] = useState(null)
     const buscadorRef = useRef(null)
     const inputImportRef = useRef(null)
+    const [metodos, setMetodos] = useState([])
+
 
     const {
         toastDeshacer,
@@ -68,10 +70,17 @@ function Clientes() {
 
         if (busqueda.trim()) {
             const q = busqueda.toLowerCase()
-            lista = lista.filter(c =>
-                (c.nombre || '').toLowerCase().includes(q) ||
-                (c.telefono || '').includes(q)
-            )
+            lista = lista.filter(c => {
+                const q = busqueda.toLowerCase()
+                if ((c.nombre || '').toLowerCase().includes(q)) return true
+
+                if (c.contactos) {
+                    return Object.values(c.contactos).some(arr =>
+                        arr.some(v => v.toLowerCase().includes(q))
+                    )
+                }
+                return (c.telefono || '').includes(q) || (c.instagram || '').includes(q)
+            })
         }
 
         switch (orden) {
@@ -99,10 +108,15 @@ function Clientes() {
 
     async function obtener(signal) {
         try {
-            const [rCli, rPed] = await Promise.all([api.get('/clientes'), api.get('/pedidos')])
+            const [rCli, rPed, rMet] = await Promise.all([
+                api.get('/clientes'),
+                api.get('/pedidos'),
+                api.get('/metodos-contacto')
+            ])
             if (signal?.aborted) return
             setClientes(rCli.data?.data ?? rCli.data ?? [])
             setPedidos(rPed.data?.data ?? rPed.data ?? [])
+            setMetodos(rMet.data?.data ?? [])
         } catch (e) {
             mostrarError('No se pudieron cargar los clientes.')
         }
@@ -146,16 +160,26 @@ function Clientes() {
     }
 
     function exportarClientesSheet() {
-        const filas = procesados.map(cliente => [
-            cliente.nombre,
-            cliente.telefono || '',
-            cliente.instagram || '',
-            cliente.direccion || '',
-            cliente.notas || '',
-            pedidosPorCliente[cliente.id] || 0
-        ])
+        const idsMetodos = metodos.map(m => m.id)
 
-        const encabezados = ['Cliente', 'Telefono', 'Instagram', 'Direccion', 'Notas', 'Pedidos']
+        const encabezados = ['Cliente', ...metodos.map(m => m.nombre), 'Direccion', 'Notas', 'Pedidos']
+
+        const filas = procesados.map(cliente => {
+            const contactosCols = idsMetodos.map(id => {
+                const vals = cliente.contactos?.[id] ?? []
+                if (!vals.length && id === 'telefono') return cliente.telefono || ''
+                if (!vals.length && id === 'instagram') return cliente.instagram || ''
+                return vals.join(' | ')
+            })
+            return [
+                cliente.nombre,
+                ...contactosCols,
+                cliente.direccion || '',
+                cliente.notas || '',
+                pedidosPorCliente[cliente.id] || 0
+            ]
+        })
+
         exportarCsv({
             nombreArchivo: `clientes-${new Date().toISOString().slice(0, 10)}.csv`,
             encabezados,
@@ -169,14 +193,18 @@ function Clientes() {
         return filas
             .map(fila => {
                 const nombre = obtenerValorFila(fila, indices, ['cliente', 'nombre']).trim()
-                const telefono = obtenerValorFila(fila, indices, ['telefono', 'tel']).trim()
-                const instagram = obtenerValorFila(fila, indices, ['instagram', 'ig']).trim()
                 const direccion = obtenerValorFila(fila, indices, ['direccion']).trim()
                 const notas = obtenerValorFila(fila, indices, ['notas', 'nota']).trim()
 
-                return { nombre, telefono, instagram, direccion, notas }
+                const contactos = {}
+                for (const metodo of metodos) {
+                    const val = obtenerValorFila(fila, indices, [metodo.nombre.toLowerCase(), metodo.id]).trim()
+                    if (val) contactos[metodo.id] = val.split('|').map(v => v.trim()).filter(Boolean)
+                }
+
+                return { nombre, contactos, direccion, notas }
             })
-            .filter(cliente => cliente.nombre && (cliente.telefono || cliente.instagram))
+            .filter(cliente => cliente.nombre)
     }
 
     async function importarClientesSheet(e) {
@@ -319,7 +347,13 @@ function Clientes() {
             </div>
 
             <div className="cli-layout">
-                <FormularioCliente onCrear={crearCliente} creando={creando} />
+                <FormularioCliente
+                    onCrear={crearCliente}
+                    creando={creando}
+                    metodos={metodos}
+                    setMetodos={setMetodos}
+                    onError={mostrarError}
+                />
 
                 <section>
                     <h2 className="cli-list-header">
@@ -332,22 +366,29 @@ function Clientes() {
                     </h2>
 
                     <div className="catalogo-actions">
-                        <LimpiarTodo
-                            onLimpiar={limpiarClientes}
-                            disabled={clientes.length === 0}
-                            titulo="Eliminar todos los clientes"
-                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
 
-                        <VistaSwitch vista={vista} setVista={setVista} />
-                        <ImportExport
-                            onExportar={exportarClientesSheet}
-                            onImportar={importarClientesSheet}
-                            importando={importando}
-                            exportDisabled={procesados.length === 0}
-                            inputRef={inputImportRef}
-                            titulo="Importar o exportar clientes"
-                        />
+                            <LimpiarTodo
+                                onLimpiar={limpiarClientes}
+                                disabled={clientes.length === 0}
+                                titulo="Eliminar todos los clientes"
+                            />
 
+                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem" }}>
+
+                                <ImportExport
+                                    onExportar={exportarClientesSheet}
+                                    onImportar={importarClientesSheet}
+                                    vista={vista}
+                                    importando={importando}
+                                    exportDisabled={procesados.length === 0}
+                                    inputRef={inputImportRef}
+                                    titulo="Importar o exportar clientes"
+                                />
+                                <VistaSwitch vista={vista} setVista={setVista} />
+
+                            </div>
+                        </div>
                     </div>
 
                     {resultadoImportacion && (
@@ -363,12 +404,14 @@ function Clientes() {
                                     onEliminar={eliminarCliente}
                                     onEditar={editarCliente}
                                     pedidosPorCliente={pedidosPorCliente}
+                                    metodos={metodos}
                                 />
                             ) : (
                                 <div className="cli-grid">
                                     {paginados.map(c => (
                                         <TarjetaCliente
                                             key={c.id}
+                                            metodos={metodos}
                                             cliente={c}
                                             onEliminar={eliminarCliente}
                                             onEditar={editarCliente}

@@ -9,6 +9,7 @@
     --black: #0C0C0C;
     --border: #c3bfb6;
     --borderHover: #b4bdbc;
+    --white-transparente: rgba(255, 255, 247, 0.94);
 }
 
 .app-shell {

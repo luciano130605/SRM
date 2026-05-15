@@ -394,22 +394,28 @@ function Productos() {
                     </h2>
 
                     <div className="catalogo-actions">
-                        <LimpiarTodo
-                            onLimpiar={limpiarProductos}
-                            disabled={productos.length === 0}
-                            titulo="Eliminar todos los productos"
-                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                            <LimpiarTodo
+                                onLimpiar={limpiarProductos}
+                                disabled={productos.length === 0}
+                                titulo="Eliminar todos los productos"
+                            />
+                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem"}}>
+                                <ImportExport
+                                    onExportar={exportarProductosSheet}
+                                    onImportar={importarProductosSheet}
+                                    importando={importando}
+                                    exportDisabled={productosProcesados.length === 0}
+                                    inputRef={inputImportRef}
+                                    titulo="Importar o exportar productos"
+                                    vista={vista}
+                                />
 
-                        <VistaSwitch vista={vista} setVista={setVista} />
+                                <VistaSwitch vista={vista} setVista={setVista} />
+                            </div>
+                        </div>
 
-                        <ImportExport
-                            onExportar={exportarProductosSheet}
-                            onImportar={importarProductosSheet}
-                            importando={importando}
-                            exportDisabled={productosProcesados.length === 0}
-                            inputRef={inputImportRef}
-                            titulo="Importar o exportar productos"
-                        />
+
                     </div>
 
                     {resultadoImportacion && (

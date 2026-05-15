@@ -388,22 +388,29 @@ export default function Pedidos() {
                     </h2>
 
                     <div className="catalogo-actions ped-actions">
-                        <LimpiarTodo
-                            onLimpiar={limpiarPedidos}
-                            disabled={pedidos.length === 0}
-                            titulo="Eliminar todos los pedidos"
-                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
 
-                        <VistaSwitch vista={vista} setVista={setVista} />
+                            <LimpiarTodo
+                                onLimpiar={limpiarPedidos}
+                                disabled={pedidos.length === 0}
+                                titulo="Eliminar todos los pedidos"
+                            />
 
-                        <ImportExport
-                            onExportar={exportarPedidosSheet}
-                            onImportar={importarPedidosSheet}
-                            importando={importando}
-                            exportDisabled={procesados.length === 0}
-                            inputRef={inputImportRef}
-                            titulo="Importar o exportar pedidos"
-                        />
+                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem" }}>
+
+                                <ImportExport
+                                    onExportar={exportarPedidosSheet}
+                                    onImportar={importarPedidosSheet}
+                                    importando={importando}
+                                    exportDisabled={procesados.length === 0}
+                                    inputRef={inputImportRef}
+                                    vista={vista}
+                                    titulo="Importar o exportar pedidos"
+                                />
+                                <VistaSwitch vista={vista} setVista={setVista} />
+
+                            </div>
+                        </div>
                     </div>
 
                     {resultadoImportacion && (

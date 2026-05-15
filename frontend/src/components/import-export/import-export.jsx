@@ -1,5 +1,7 @@
 import { useRef } from "react"
 import "./import-export.css"
+import Export from "../../icons/Export"
+import Import from "../../icons/Import"
 
 export default function ImportExport({
     onExportar,
@@ -9,6 +11,7 @@ export default function ImportExport({
     importDisabled = false,
     titulo = 'Importar o exportar',
     inputRef,
+    vista
 }) {
     const localInputRef = useRef(null)
     const fileInputRef = inputRef || localInputRef
@@ -16,6 +19,8 @@ export default function ImportExport({
     function abrirImportador() {
         fileInputRef.current?.click()
     }
+
+    if (vista !== 'tabla') return null
 
     return (
         <div className="sheet-switch" aria-label={titulo}>
@@ -25,7 +30,7 @@ export default function ImportExport({
                 type="button"
                 title="Exportar en CSV"
             >
-                Exportar
+                <Export />
             </button>
 
             <button
@@ -34,7 +39,7 @@ export default function ImportExport({
                 type="button"
                 title="Importar en CSV"
             >
-                {importando ? 'Importando...' : 'Importar'}
+               <Import />
             </button>
 
             <input

@@ -1,100 +1,62 @@
-const { clientes } = require('../data/data')
-const { v4: uuidv4 } = require('uuid')
+const supabase = require('../supabase')
 
-function obtenerClientes(req, res) {
-    res.status(200).json({
-        ok: true,
-        data: clientes
-    })
+async function obtenerClientes(req, res) {
+    const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+
+    res.status(200).json({ ok: true, data })
 }
 
-function crearCliente(req, res) {
-    try {
-        const { nombre, telefono, instagram, direccion, notas } = req.body
+async function crearCliente(req, res) {
+    const { nombre, contactos, direccion, notas } = req.body
 
-        if (!nombre || (!telefono && !instagram)) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: "Faltan datos"
-            })
-        }
+    if (!nombre) return res.status(400).json({ ok: false, mensaje: 'Falta el nombre' })
 
-        const nuevoCliente = {
-            id: uuidv4(),
-            nombre,
-            telefono,
-            instagram,
-            direccion,
-            notas,
-            fechaPedido: new Date().toISOString()
-        }
+    const { data, error } = await supabase
+        .from('clientes')
+        .insert([{ nombre, contactos: contactos || {}, direccion, notas }])
+        .select()
+        .single()
 
-        clientes.push(nuevoCliente)
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
 
-        res.status(200).json({
-            ok: true,
-            data: nuevoCliente
-        })
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            mensaje: "Error servidor"
-        })
-    }
+    res.status(201).json({ ok: true, data })
 }
 
-function editarCliente(req, res) {
+async function editarCliente(req, res) {
     const { id } = req.params
-    const { nombre, telefono, instagram, direccion, notas } = req.body
+    const { nombre, contactos, direccion, notas } = req.body
 
-    if (!nombre || (!telefono && !instagram)) {
-        return res.status(400).json({
-            ok: false,
-            mensaje: "Faltan datos"
-        })
-    }
+    if (!nombre) return res.status(400).json({ ok: false, mensaje: 'Falta el nombre' })
 
-    const indice = clientes.findIndex(cliente => String(cliente.id) === String(id))
+    const { data, error } = await supabase
+        .from('clientes')
+        .update({ nombre, contactos: contactos || {}, direccion, notas })
+        .eq('id', id)
+        .select()
+        .single()
 
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Cliente no encontrado'
-        })
-    }
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+    if (!data) return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado' })
 
-    clientes[indice] = {
-        ...clientes[indice],
-        nombre,
-        telefono,
-        instagram,
-        direccion,
-        notas
-    }
-
-    res.status(200).json({
-        ok: true,
-        data: clientes[indice]
-    })
+    res.status(200).json({ ok: true, data })
 }
 
-function eliminarCliente(req, res) {
+async function eliminarCliente(req, res) {
     const { id } = req.params
-    const indice = clientes.findIndex(cliente => String(cliente.id) === String(id))
 
-    if (indice === -1) {
-        return res.status(404).json({
-            ok: false,
-            mensaje: 'Cliente no encontrado'
-        })
-    }
+    const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', id)
 
-    clientes.splice(indice, 1)
+    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
 
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Cliente eliminado'
-    })
+    res.status(200).json({ ok: true, mensaje: 'Cliente eliminado' })
 }
 
 module.exports = { obtenerClientes, crearCliente, editarCliente, eliminarCliente }

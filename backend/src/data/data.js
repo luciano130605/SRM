@@ -42,7 +42,15 @@ const categoriasDefault = [
     }
 ]
 
+
+const metodosDefault = [
+
+]
+
 const categoriasPath = path.join(__dirname, 'categorias.json')
+const metodosPath = path.join(__dirname, 'metodos-contacto.json')
+
+
 
 function cargarCategorias() {
     if (!fs.existsSync(categoriasPath)) return categoriasDefault
@@ -68,6 +76,23 @@ function guardarCategorias() {
     )
 }
 
+function cargarMetodos() {
+    if (!fs.existsSync(metodosPath)) return metodosDefault
+    try {
+        const data = fs.readFileSync(metodosPath, 'utf8')
+        const guardados = JSON.parse(data)
+        return Array.isArray(guardados) ? guardados : metodosDefault
+    } catch {
+        return metodosDefault
+    }
+}
+
+const metodosContacto = cargarMetodos()
+
+function guardarMetodos() {
+    fs.writeFileSync(metodosPath, JSON.stringify(metodosContacto, null, 2))
+}
+
 const pedidos = []
 
-module.exports = { clientes, productos, pedidos, categorias, guardarCategorias }
+module.exports = { clientes, productos, pedidos, categorias, guardarCategorias, metodosContacto, guardarMetodos }
