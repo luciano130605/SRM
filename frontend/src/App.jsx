@@ -35,6 +35,11 @@ export default function App() {
                 localStorage.removeItem('srm_user')
             }
         }
+
+        const cerrarPorSesionInvalida = () => setUsuario(null)
+        window.addEventListener('srm:logout', cerrarPorSesionInvalida)
+
+        return () => window.removeEventListener('srm:logout', cerrarPorSesionInvalida)
     }, [])
 
     function guardarSesion(authData) {

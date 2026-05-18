@@ -274,6 +274,189 @@ body {
     flex: 0 0 auto;
 }
 
+.acceso-svg {
+    overflow: visible;
+}
+
+.acceso-btn:hover .pedido-sheet {
+    animation: dash-order-lift 0.42s ease both;
+}
+
+.acceso-btn:hover .pedido-line--one {
+    animation: dash-order-line 0.55s ease both;
+}
+
+.acceso-btn:hover .pedido-line--two {
+    animation: dash-order-line 0.55s ease 0.08s both;
+}
+
+.acceso-btn:hover .producto-box--main {
+    animation: dash-box-rock 0.55s ease both;
+}
+
+.acceso-btn:hover .producto-box--small {
+    animation: dash-box-slide 0.58s ease both;
+}
+
+.acceso-btn:hover .cliente-main {
+    animation: dash-client-pop 0.42s ease both;
+}
+
+.acceso-btn:hover .cliente-plus {
+    animation: dash-client-plus 0.58s ease both;
+}
+
+.acceso-btn:hover .entrega-truck {
+    animation: dash-truck-start 0.62s ease both;
+}
+
+.acceso-btn:hover .entrega-wheel {
+    animation: dash-wheel-spin 0.5s linear both;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.acceso-btn:hover .entrega-exhaust {
+    animation: dash-exhaust 0.6s ease both;
+}
+
+@keyframes dash-order-lift {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    45% {
+        transform: translateY(-1.5px) rotate(-4deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+}
+
+@keyframes dash-order-line {
+    0% {
+        stroke-dasharray: 0 18;
+        opacity: 0.35;
+    }
+
+    100% {
+        stroke-dasharray: 18 0;
+        opacity: 1;
+    }
+}
+
+@keyframes dash-box-rock {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    40% {
+        transform: translate(1px, -2px) rotate(5deg);
+    }
+
+    70% {
+        transform: translate(-1px, 1px) rotate(-3deg);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+}
+
+@keyframes dash-box-slide {
+    0% {
+        opacity: 0;
+        transform: translate(-5px, 4px) scale(0.8);
+    }
+
+    50% {
+        opacity: 0.9;
+        transform: translate(-1px, 1px) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(4px, -2px) scale(0.85);
+    }
+}
+
+@keyframes dash-client-pop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08) translateY(-1px);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes dash-client-plus {
+    0% {
+        transform: scale(0.85) translate(1px, 1px);
+        opacity: 0.65;
+    }
+
+    45% {
+        transform: scale(1.12) translate(0, -1px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes dash-truck-start {
+    0% {
+        transform: translateX(0) rotate(0deg);
+    }
+
+    18% {
+        transform: translateX(-1px) rotate(-1deg);
+    }
+
+    38% {
+        transform: translateX(2px) rotate(1deg);
+    }
+
+    60% {
+        transform: translateX(4px) rotate(0deg);
+    }
+
+    100% {
+        transform: translateX(0) rotate(0deg);
+    }
+}
+
+@keyframes dash-wheel-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash-exhaust {
+    0% {
+        opacity: 0;
+        transform: translateX(4px) scaleX(0.4);
+    }
+
+    35% {
+        opacity: 0.75;
+        transform: translateX(-2px) scaleX(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-8px) scaleX(0.65);
+    }
+}
+
 .acceso-label,
 .acceso-desc {
     display: block;

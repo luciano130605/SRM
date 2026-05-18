@@ -7,6 +7,7 @@
   --pink-light: #d0627a;
   --pink-dark: #e12a52;
   --black: #0C0C0C;
+  --grey: #4f4e4e;
   --border: #c3bfb6;
   --borderHover: #b4bdbc;
   --green: #2ecc71;
@@ -1157,4 +1158,376 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .btn-danger:hover {
   background: #ff4d4d;
+}
+
+
+/* modal calculadora-costo */
+.cc-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--pink-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  margin-top: 0.3rem;
+  transition: all 0.15s;
+}
+
+.cc-trigger:hover {
+  color: var(--pink);
+}
+
+.cc-input-unidad-wrap {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.cc-unidad-indicador {
+  font-size: .9rem;
+  opacity: .7;
+  min-width: 32px;
+}
+
+.cc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  isolation: isolate;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: cc-in 0.15s ease;
+}
+
+@keyframes cc-in {
+  from {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
+}
+
+.cc-modal {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1000000;
+  width: 100%;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+  animation: cc-up 0.18s ease;
+}
+
+@keyframes cc-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1
+  }
+}
+
+.cc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.cc-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--black);
+}
+
+.cc-subtitulo {
+  font-size: 0.78rem;
+  color: var(--borderHover);
+  margin: 0.2rem 0 0;
+}
+
+.cc-leyenda {
+  font-size: 0.76rem;
+  color: var(--borderHover);
+  margin: 0 0 0.85rem;
+}
+
+.cc-tabla-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 0.6rem;
+}
+
+.cc-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.cc-tabla thead tr {
+  background: var(--white-grey);
+}
+
+.cc-tabla th {
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--grey);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.cc-fila td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.cc-fila:last-child td {
+  border-bottom: none;
+}
+
+.cc-input {
+  width: 100%;
+  padding: 0.38rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 0.83rem;
+  background: var(--white-grey);
+  color: var(--black);
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.cc-input:focus {
+  border-color: var(--borderHover);
+}
+
+.cc-input--num {
+  width: 68px;
+  text-align: right;
+}
+
+.cc-input-prefix-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--black);
+  transition: border-color 0.15s;
+}
+
+.cc-input-prefix-wrap:focus-within {
+  border-color: var(--borderHover);
+}
+
+.cc-prefix {
+  padding: 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--black);
+  background: var(--white-grey);
+  border-right: 1px solid var(--borderHover);
+  line-height: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.cc-input--con-prefix {
+  border: none;
+  border-radius: 0;
+  width: 72px;
+}
+
+.cc-input--con-prefix:focus {
+  outline: none;
+}
+
+.cc-select {
+  padding: 0.38rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.83rem;
+  background: var(--white-grey);
+  color: var(--black);
+  outline: none;
+  cursor: pointer;
+}
+
+.cc-select:focus {
+  border-color: var(--borderHover);
+}
+
+.cc-td-costo {
+  text-align: right;
+  padding-right: 0.75rem;
+  min-width: 72px;
+}
+
+.cc-costo-calc {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-costo-vacio {
+  font-size: 0.82rem;
+  color: var(--borderHover);
+}
+
+.cc-btn-x {
+  background: none;
+  border: none;
+  color: var(--borderHover);
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+  transition: color 0.15s;
+}
+
+.cc-btn-x:hover {
+  color: #ef4444;
+}
+
+.cc-btn-x--lg {
+  font-size: 1.5rem;
+}
+
+.cc-agregar {
+  background: none;
+  border: none;
+  color: var(--pink-light);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+  margin-bottom: 1rem;
+  transition: all 0.15s;
+}
+
+.cc-agregar:hover {
+  color: var(--pink);
+}
+
+.cc-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--white-grey);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.cc-resumen-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cc-resumen-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.cc-resumen-desc {
+  font-size: 0.7rem;
+  color: var(--borderHover);
+}
+
+.cc-resumen-valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-error {
+  font-size: 0.8rem;
+  color: #ef4444;
+  margin-bottom: 0.75rem;
+}
+
+.cc-acciones {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.cc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.cc-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cc-btn:not(:disabled):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+
+.cc-btn--primario {
+  background: var(--pink);
+  color: var(--white);
+}
+
+.cc-spinner {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: cc-spin 0.55s linear infinite;
+}
+
+@keyframes cc-spin {
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+.cc-hint {
+  font-size: 0.73rem;
+  color: var(--borderHover);
+  margin: 0;
 }

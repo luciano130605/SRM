@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import "./header.css";
+import LogoutIcon from "../../icons/LogOutMoviminto";
 
 const secciones = [
     { id: "dashboard", label: "Dashboard" },
@@ -43,7 +44,7 @@ export default function Header({ vista, setVista, usuario, onLogout }) {
 
             <div className="app-auth">
                 <button className="app-login-btn" type="button" onClick={onLogout}>
-                    Salir
+                    <LogoutIcon />
                 </button>
             </div>
         </header>

@@ -62,4 +62,20 @@ async function recuperarContrasena(req, res) {
     res.status(200).json({ ok: true, mensaje: 'Te enviamos un email para recuperar la contrasena' })
 }
 
-module.exports = { login, registro, recuperarContrasena }
+async function refrescarSesion(req, res) {
+    const { refreshToken } = req.body
+
+    if (!refreshToken) {
+        return res.status(400).json({ ok: false, mensaje: 'Falta refresh token' })
+    }
+
+    const { data, error } = await supabase.auth.refreshSession({
+        refresh_token: refreshToken,
+    })
+
+    if (error) return res.status(401).json({ ok: false, mensaje: error.message })
+
+    res.status(200).json({ ok: true, data: mapAuthData(data) })
+}
+
+module.exports = { login, registro, recuperarContrasena, refrescarSesion }

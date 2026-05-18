@@ -284,7 +284,8 @@ export default function Pedidos() {
         }
 
         function handleKeyDown(e) {
-            const tecla = e.key.toLowerCase()
+            const tecla = (e.key || '').toLowerCase()
+            if (!tecla) return
             const conCtrl = e.ctrlKey || e.metaKey
 
             if (e.key === 'Escape') {

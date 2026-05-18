@@ -130,7 +130,7 @@ function Productos() {
             await obtenerProductos()
             onExito()
         } catch (error) {
-            mostrarError('No se pudo crear el producto.')
+            mostrarError(error.response?.data?.mensaje || 'No se pudo crear el producto.')
         } finally {
             setCreando(false)
         }
@@ -277,7 +277,8 @@ function Productos() {
         }
 
         function handleKeyDown(e) {
-            const tecla = e.key.toLowerCase()
+            const tecla = (e.key || '').toLowerCase()
+            if (!tecla) return
             const conCtrl = e.ctrlKey || e.metaKey
 
             if (e.key === 'Escape') {

@@ -1,6 +1,10 @@
 import "./limpiar-todo.css"
+import { useRef } from "react"
+import ClearMovimiento from "../../icons/clearMovimiento"
 
 export default function LimpiarTodo({ onLimpiar, disabled, titulo = 'Eliminar todos' }) {
+    const clearRef = useRef(null)
+
     return (
         <div className="danger-switch" aria-label={titulo}>
             <button
@@ -8,8 +12,10 @@ export default function LimpiarTodo({ onLimpiar, disabled, titulo = 'Eliminar to
                 disabled={disabled}
                 type="button"
                 title={titulo}
+                onMouseEnter={() => clearRef.current?.startAnimation()}
+                onMouseLeave={() => clearRef.current?.stopAnimation()}
             >
-                Limpiar todo
+                <ClearMovimiento ref={clearRef} />
             </button>
         </div>
     )

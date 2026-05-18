@@ -42,7 +42,7 @@ export default function GestorCategorias({
             setNueva('')
 
         } catch (error) {
-            onError?.('No se pudo agregar la categoria.')
+            onError?.(error.response?.data?.mensaje || 'No se pudo agregar la categoria.')
         }
     }
 
