@@ -10,6 +10,7 @@ const metodosContactoRouter = require('./routes/metodos-contacto.routes')
 const authRoutes = require('./routes/auth.routes')
 const iaRoutes = require('./routes/ia.routes')
 const requiereAuth = require('./middlewares/auth.middleware')
+const whatsappRoutes = require('./routes/whatsapp.routes')
 
 const app = express()
 
@@ -32,6 +33,7 @@ app.use('/pedidos', pedidosRoutes)
 app.use('/categorias', categoriasRoutes)
 app.use('/metodos-contacto', metodosContactoRouter)
 app.use('/ia', iaRoutes)
+app.use('/whatsapp', whatsappRoutes)
 
 app.listen(PORT, HOST, () => {
     console.log(`Servidor corriendo en http://${HOST}:${PORT}`)

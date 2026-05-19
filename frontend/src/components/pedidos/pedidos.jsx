@@ -14,6 +14,8 @@ import ListaPedidos from "./lista-pedidos"
 import Paginacion from '../paginacion/paginacion'
 import useEliminacionDeshacer from "../../hooks/use-eliminacion-deshacer"
 import { exportarCsv, normalizarTexto, obtenerValorFila, parsearNumero, parsearTablaCsv } from "../../utils/csv"
+import ConfiguracionWhatsapp from "./configuracion-whatsapp"
+import Whatsapp from "../../icons/Whatsapp"
 
 const POR_PAGINA = 3
 const comandosPedidos = [
@@ -42,6 +44,7 @@ export default function Pedidos() {
     const [comandosAbiertos, setComandosAbiertos] = useState(false)
     const buscadorRef = useRef(null)
     const inputImportRef = useRef(null)
+    const [waAbierto, setWaAbierto] = useState(false)
 
     const {
         toastDeshacer,
@@ -351,6 +354,13 @@ export default function Pedidos() {
                     setAbierto={setComandosAbiertos}
                     comandos={comandosPedidos}
                 />
+                <button
+                    className="btn-wa-config"
+                    onClick={() => setWaAbierto(true)}
+                    title="Configurar WhatsApp"
+                >
+                    <Whatsapp />
+                </button>
 
                 <Buscador
                     inputRef={buscadorRef}
@@ -439,6 +449,11 @@ export default function Pedidos() {
                             />
                         </>
                     }
+
+                    <ConfiguracionWhatsapp
+                        abierto={waAbierto}
+                        onCerrar={() => setWaAbierto(false)}
+                    />
                 </section>
             </div>
 

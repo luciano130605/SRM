@@ -11,6 +11,7 @@ import formatPrecio from "./format-precio"
 import ExternalLinkIcon from "../../icons/ExternalLink"
 import Copy from "../../icons/Copy"
 import CopySuccess from "../../icons/CopySuccess"
+import ModalNotificacionPedido from "./modal-notificacion-pedido"
 
 export default function TarjetaPedido({
     pedido,
@@ -138,7 +139,11 @@ export default function TarjetaPedido({
                 <span
                     className={`estado-chip ${chipClass(pedido.estado)}`}
                     title="Clic para avanzar estado"
-                    onClick={() => onCambiarEstado(pedido.id, siguienteEstado(pedido.estado))}
+                    onClick={() => {
+                        const siguiente = siguienteEstado(pedido.estado)
+                        onCambiarEstado(pedido.id, siguiente)
+                        setModalNotif({ nuevoEstado: siguiente })
+                    }}
                 >
                     {pedido.estado || 'pendiente'}
                 </span>
@@ -272,7 +277,14 @@ export default function TarjetaPedido({
                 </div>
             )}
 
-
+            {modalNotif && (
+                <ModalNotificacionPedido
+                    pedido={pedido}
+                    cliente={cliente}
+                    nuevoEstado={modalNotif.nuevoEstado}
+                    onCerrar={() => setModalNotif(null)}
+                />
+            )}
 
 
             {pedido.notas && <p className="ped-card-notas">"{pedido.notas}"</p>}

@@ -1,21 +1,12 @@
-const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+const { llamarGeminiJson } = require('../services/gemini.service')
 
-function limpiarJsonGemini(texto) {
-    return texto.replace(/```json|```/g, '').trim()
-}
 
 async function sugerirPrecioVenta(req, res) {
     const { nombreProducto, costoProduccion, categoria } = req.body
     const costo = Number(costoProduccion)
 
-    if (!GEMINI_KEY) {
-        return res.status(500).json({ ok: false, mensaje: 'Falta GEMINI_API_KEY en el backend' })
-    }
-
-    if (!costo || costo <= 0) {
+    if (!costo || costo <= 0)
         return res.status(400).json({ ok: false, mensaje: 'Falta un costo de produccion valido' })
-    }
 
     const prompt = `
 Sos un experto en costos y precios para pequenos negocios de gastronomia / manufactura artesanal.
@@ -37,30 +28,40 @@ Considera margenes tipicos del rubro, competitividad, costos indirectos y que el
 `.trim()
 
     try {
-        const respuesta = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3 },
-                }),
-            }
-        )
-
-        if (!respuesta.ok) {
-            return res.status(502).json({ ok: false, mensaje: `Gemini error: ${respuesta.status}` })
-        }
-
-        const data = await respuesta.json()
-        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-        const sugerencia = JSON.parse(limpiarJsonGemini(raw))
-
+        const sugerencia = await llamarGeminiJson(prompt)
         res.status(200).json({ ok: true, data: sugerencia })
     } catch (error) {
         res.status(500).json({ ok: false, mensaje: error.message || 'No se pudo obtener sugerencia de IA' })
     }
 }
 
-module.exports = { sugerirPrecioVenta }
+
+async function consultarPedidoIA({ numeroPedido, pedido }) {
+    const fechaEntrega = pedido.fechaEntrega || pedido.fecha || null
+    const diasDesdeCreacion = pedido.createdAt
+        ? Math.floor((Date.now() - new Date(pedido.createdAt)) / 86_400_000)
+        : null
+
+    const prompt = `
+Sos el asistente de un pequeño negocio. Un cliente preguntó por su pedido #${numeroPedido}.
+
+Datos del pedido:
+- Estado actual: ${pedido.estado || 'pendiente'}
+- Fecha de creacion: ${pedido.createdAt ? new Date(pedido.createdAt).toLocaleDateString('es-AR') : 'desconocida'}
+- Fecha de entrega registrada: ${fechaEntrega ? new Date(fechaEntrega).toLocaleDateString('es-AR') : 'no especificada'}
+- Dias desde que se hizo el pedido: ${diasDesdeCreacion ?? 'desconocido'}
+- Notas: ${pedido.notas || 'ninguna'}
+- Total: $${pedido.total || 0}
+
+Con esa info, redacta un mensaje corto y amigable para WhatsApp (maximo 3 oraciones) que le diga al cliente:
+1. El estado actual de su pedido
+2. Una estimacion de cuando estara listo (si no hay fecha exacta, estimala segun el estado y los dias transcurridos)
+
+Hablale de vos, tono cercano. No uses emojis. No menciones el numero de pedido en el mensaje.
+Devolve SOLO el texto del mensaje, sin comillas ni formato extra.
+`.trim()
+
+    return llamarGemini(prompt, 0.5)
+}
+
+module.exports = { sugerirPrecioVenta, consultarPedidoIA }

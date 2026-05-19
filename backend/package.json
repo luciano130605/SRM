@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@open-wa/wa-automate": "^4.76.0",
     "@supabase/supabase-js": "^2.49.4",
     "cors": "^2.8.6",
     "dotenv": "^16.4.7",
