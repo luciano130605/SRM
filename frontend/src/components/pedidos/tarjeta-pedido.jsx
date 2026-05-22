@@ -12,6 +12,7 @@ import ExternalLinkIcon from "../../icons/ExternalLink"
 import Copy from "../../icons/Copy"
 import CopySuccess from "../../icons/CopySuccess"
 import ModalNotificacionPedido from "./modal-notificacion-pedido"
+import DropdownMenu from "../../dropdown-menu/dropdown-menu"
 
 export default function TarjetaPedido({
     pedido,
@@ -25,6 +26,8 @@ export default function TarjetaPedido({
 }) {
     const [draft, setDraft] = useState({})
     const [copiado, setCopiado] = useState('')
+    const [modalNotif, setModalNotif] = useState(null)
+    const [selectorEstado, setSelectorEstado] = useState(false)
 
     const clienteMap = useMemo(() =>
         Object.fromEntries(clientes.map(cliente => [String(cliente.id), cliente])), [clientes])
@@ -136,17 +139,33 @@ export default function TarjetaPedido({
         <>
             <span className="ped-card-total">${formatPrecio(pedido.total)}</span>
             {!editando && (
-                <span
-                    className={`estado-chip ${chipClass(pedido.estado)}`}
-                    title="Clic para avanzar estado"
-                    onClick={() => {
-                        const siguiente = siguienteEstado(pedido.estado)
-                        onCambiarEstado(pedido.id, siguiente)
-                        setModalNotif({ nuevoEstado: siguiente })
-                    }}
-                >
-                    {pedido.estado || 'pendiente'}
-                </span>
+                <div className="pedido-estado-wrapper">
+                    <span
+                        className={`pedido-estado-chip ${chipClass(pedido.estado)}`}
+                        onClick={() => setSelectorEstado(v => !v)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {pedido.estado}
+                    </span>
+
+                    <DropdownMenu
+                    className="drop-pedido"
+                        abierto={selectorEstado}
+                        onCerrar={() => setSelectorEstado(false)}
+                        opciones={ESTADOS_PEDIDO
+                            .filter(e => e !== pedido.estado)
+                            .map(e => ({
+                                value: e,
+                                label: e,
+                            }))
+                        }
+                        onSeleccionar={({ value }) => {
+                            onCambiarEstado(pedido.id, value)
+                            setModalNotif({ nuevoEstado: value })
+                            setSelectorEstado(false)
+                        }}
+                    />
+                </div>
             )}
             <div className="ped-card-actions">{botones}</div>
         </>

@@ -1,16 +1,22 @@
-** Clientes **
-api wpp
-gemini
 
 ** producto **
-gemini (listo)
-escanear ticket / comprobante con gemini
+escanear ticket / comprobante con IA
 
 ** pedidos **
-api wpp
-gemini
-btn de wpp igual q comandos
+agregar nro de pedido
 
 
-** no agrega clientes **    
+
+
+** chat ia ** 
+
+
+** wp **
+el cliente envia el nro de pedido -> datos, fecha de entrega, etc
+
+ 
+
+
+
+
 

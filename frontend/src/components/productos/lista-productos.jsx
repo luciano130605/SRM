@@ -14,7 +14,7 @@ export default function ListaProductos({ productos, onEliminar, onEditar, catego
     const paginados = productos.slice(desde, hasta)
 
     if (productos.length === 0) {
-        return <p className="sin-productos">Ningún producto encontrado.</p>
+        return <p className="empty-state sin-productos">Ningún producto encontrado.</p>
     }
 
     if (vista === 'tabla') {

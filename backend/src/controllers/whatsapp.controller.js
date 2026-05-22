@@ -2,15 +2,20 @@ const waService = require('../services/whatsapp.service')
 const { consultarPedidoIA } = require('./ia.controller')
 const supabase = require('../supabase')
 
-async function manejarMensajeEntrante(mensaje) {
-    if (mensaje.isGroupMsg || mensaje.fromMe || mensaje.type !== 'chat') return
+async function manejarMensajeEntrante(msg) {
+    if (msg.key.fromMe || msg.key.remoteJid.endsWith('@g.us')) return
 
-    const texto = (mensaje.body || '').trim()
+    const texto = (
+        msg.message?.conversation ||
+        msg.message?.extendedTextMessage?.text ||
+        ''
+    ).trim()
+
     const match = texto.match(/\b(\d+)\b/)
     if (!match) return
 
     const numeroPedido = match[1]
-    const numeroCliente = mensaje.from.replace('@c.us', '')
+    const numeroCliente = msg.key.remoteJid.replace('@s.whatsapp.net', '')
 
     try {
         const { data: pedido, error } = await supabase
@@ -33,7 +38,6 @@ async function manejarMensajeEntrante(mensaje) {
         console.error('[WA webhook]', error.message)
     }
 }
-
 async function conectar(req, res) {
     try {
         await waService.iniciarWhatsapp(manejarMensajeEntrante)

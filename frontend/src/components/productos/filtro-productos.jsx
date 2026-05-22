@@ -1,3 +1,5 @@
+import { useState } from "react"
+import DropdownMenu from "../../dropdown-menu/dropdown-menu"
 
 export default function FiltrosProductos({
     categorias,
@@ -8,44 +10,59 @@ export default function FiltrosProductos({
     hayFiltros,
     totalFiltrados
 }) {
+    const [categoriaAbierta, setCategoriaAbierta] = useState(false)
+    const [ordenAbierto, setOrdenAbierto] = useState(false)
+
+    const categoriaActual =
+        filtroCategoria || "Todas las categorías"
+
+    const ordenes = [
+        { value: "reciente", label: "Más reciente" },
+        { value: "az", label: "A → Z" },
+        { value: "za", label: "Z → A" },
+        { value: "precio-desc", label: "Mayor precio" },
+        { value: "precio-asc", label: "Menor precio" },
+        { value: "margen-desc", label: "Mayor margen" },
+    ]
+
+    const ordenActual =
+        ordenes.find(o => o.value === orden)?.label || "Más reciente"
+
     return (
         <>
-            <select
-                className="toolbar-select"
-                value={filtroCategoria}
-                onChange={e => setFiltroCategoria(e.target.value)}
-            >
-                <option value="">Todas las categorías</option>
-
-                {categorias.map(cat => (
-                    <option
-                        key={cat.id}
-                        value={cat.nombre}
-                    >
-                        {cat.nombre}
-                    </option>
-                ))}
-            </select>
-
-            <div className="toolbar-order">
-
-                <select
-                    className="toolbar-select toolbar-select-order"
-                    value={orden}
-                    onChange={e => setOrden(e.target.value)}
+            <div className="toolbar-dropdown">
+                <button
+                    type="button"
+                    className="toolbar-select"
+                    onClick={() => setCategoriaAbierta(v => !v)}
                 >
-                    <option value="reciente">Más reciente</option>
-                    <option value="az">A → Z</option>
-                    <option value="za">Z → A</option>
-                    <option value="precio-desc">Mayor precio</option>
-                    <option value="precio-asc">Menor precio</option>
-                    <option value="margen-desc">Mayor margen</option>
-                </select>
+                    {categoriaActual}
+                </button>
+
+                <DropdownMenu
+                    abierto={categoriaAbierta}
+                    onCerrar={() => setCategoriaAbierta(false)}
+                    opciones={[
+                        {
+                            value: "",
+                            label: "Todas las categorías",
+                        },
+                        ...categorias.map(cat => ({
+                            value: cat.nombre,
+                            label: cat.nombre,
+                        })),
+                    ]}
+                    onSeleccionar={({ value }) => {
+                        setFiltroCategoria(value)
+                        setCategoriaAbierta(false)
+                    }}
+                />
             </div>
+
 
             {hayFiltros && (
                 <span className="toolbar-results">
-                    {totalFiltrados} resultado{totalFiltrados !== 1 ? 's' : ''}
+                    {totalFiltrados} resultado{totalFiltrados !== 1 ? "s" : ""}
                 </span>
             )}
         </>

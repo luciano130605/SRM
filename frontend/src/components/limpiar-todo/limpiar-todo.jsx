@@ -1,4 +1,3 @@
-import "./limpiar-todo.css"
 import { useRef } from "react"
 import ClearMovimiento from "../../icons/clearMovimiento"
 
@@ -16,7 +15,9 @@ export default function LimpiarTodo({ onLimpiar, disabled, titulo = 'Eliminar to
                 onMouseLeave={() => clearRef.current?.stopAnimation()}
             >
                 <ClearMovimiento ref={clearRef} />
+                <span className="button-label">Eliminar</span>
             </button>
         </div>
     )
 }
+

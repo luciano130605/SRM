@@ -1,4 +1,5 @@
-require('dotenv').config()
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 const express = require('express')
 const cors = require('cors')
 
@@ -15,7 +16,7 @@ const whatsappRoutes = require('./routes/whatsapp.routes')
 const app = express()
 
 const PORT = 3011
-const HOST = '127.0.0.1'
+const HOST = '0.0.0.0'
 
 app.use(cors())
 app.use(express.json())
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/auth', authRoutes)
+app.use('/whatsapp', whatsappRoutes)
 app.use(requiereAuth)
 
 app.use('/clientes', clientesRoutes)
@@ -33,7 +35,6 @@ app.use('/pedidos', pedidosRoutes)
 app.use('/categorias', categoriasRoutes)
 app.use('/metodos-contacto', metodosContactoRouter)
 app.use('/ia', iaRoutes)
-app.use('/whatsapp', whatsappRoutes)
 
 app.listen(PORT, HOST, () => {
     console.log(`Servidor corriendo en http://${HOST}:${PORT}`)

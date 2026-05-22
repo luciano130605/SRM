@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import api from "../../../services/api"
-import "./pedidos.css"
 import Buscador from "../buscador/buscador"
 import VistaSwitch from "../vista-switch/vista-switch"
 import ImportExport from "../import-export/import-export"
@@ -28,7 +27,7 @@ const comandosPedidos = [
     { teclas: 'Esc', accion: 'Cerrar ventanas' }
 ]
 
-export default function Pedidos() {
+export default function Pedidos({ datosIniciales }) {
     const [pedidos, setPedidos] = useState([])
     const [clientes, setClientes] = useState([])
     const [productos, setProductos] = useState([])
@@ -337,30 +336,23 @@ export default function Pedidos() {
     const hayFiltros = busqueda.trim() || filtroEstado
 
     return (
-        <div className="ped-contenedor">
-            <header className="ped-header">
+        <div className="page-container ped-contenedor">
+            <header className="page-header ped-header">
                 <div>
-                    <p className="ped-label">Sistema de gestion</p>
-                    <h1 className="ped-title"><em>Pedidos</em></h1>
+                    <p className="page-label ped-label">Sistema de gestion</p>
+                    <h1 className="page-title ped-title"><em>Pedidos</em></h1>
                 </div>
-                <span className="ped-header-count">
+                <span className="page-count ped-header-count">
                     {pedidos.length} {pedidos.length === 1 ? 'pedido' : 'pedidos'}
                 </span>
             </header>
 
-            <div className="ped-toolbar">
+            <div className="page-toolbar ped-toolbar">
                 <Comandos
                     abierto={comandosAbiertos}
                     setAbierto={setComandosAbiertos}
                     comandos={comandosPedidos}
                 />
-                <button
-                    className="btn-wa-config"
-                    onClick={() => setWaAbierto(true)}
-                    title="Configurar WhatsApp"
-                >
-                    <Whatsapp />
-                </button>
 
                 <Buscador
                     inputRef={buscadorRef}
@@ -380,26 +372,27 @@ export default function Pedidos() {
                 />
             </div>
 
-            <div className="ped-layout">
+            <div className="page-layout ped-layout">
                 <FormularioPedido
                     onCrear={crearPedido}
                     creando={creando}
                     clientes={clientes}
                     productos={productos}
+                    datosIniciales={datosIniciales}
                 />
 
                 <section>
-                    <h2 className="ped-list-header">
+                    <h2 className="section-heading ped-list-header">
                         Registro
                         {pedidos.length > 0 && (
-                            <span className="ped-badge">
+                            <span className="count-badge ped-badge">
                                 {hayFiltros ? `${procesados.length} / ${pedidos.length}` : pedidos.length}
                             </span>
                         )}
                     </h2>
 
                     <div className="catalogo-actions ped-actions">
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                        <div className="action-row">
 
                             <LimpiarTodo
                                 onLimpiar={limpiarPedidos}
@@ -407,7 +400,7 @@ export default function Pedidos() {
                                 titulo="Eliminar todos los pedidos"
                             />
 
-                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem" }}>
+                            <div className="action-group">
 
                                 <ImportExport
                                     onExportar={exportarPedidosSheet}
@@ -429,7 +422,7 @@ export default function Pedidos() {
                     )}
 
                     {procesados.length === 0
-                        ? <p className="ped-empty">Ningun pedido encontrado.</p>
+                        ? <p className="empty-state ped-empty">Ningun pedido encontrado.</p>
                         : <>
                             <ListaPedidos
                                 pedidos={paginados}
@@ -465,4 +458,5 @@ export default function Pedidos() {
         </div>
     )
 }
+
 

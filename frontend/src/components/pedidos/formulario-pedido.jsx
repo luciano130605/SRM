@@ -1,15 +1,27 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import Formulario from "../formulario/formulario"
 import { ESTADOS_PEDIDO } from "./estados-pedido"
 import formatPrecio from "./format-precio"
 import X from "../../icons/X"
+import DropdownMenu from "../../dropdown-menu/dropdown-menu"
 
-export default function FormularioPedido({ onCrear, creando, clientes, productos }) {
+
+export default function FormularioPedido({ datosIniciales, onCrear, creando, clientes, productos }) {
     const [clienteId, setClienteId] = useState('')
+
     const [estado, setEstado] = useState('pendiente')
     const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10))
     const [notas, setNotas] = useState('')
     const [items, setItems] = useState([{ productoId: '', cantidad: 1 }])
+
+    useEffect(() => {
+        if (!datosIniciales) return
+
+        setClienteId(String(datosIniciales.clienteId ?? ""))
+        setEstado(String(datosIniciales.estado ?? ""))
+        setFecha(String(datosIniciales.fecha ?? ""))
+        setNotas(String(datosIniciales.notas ?? ""))
+    }, [datosIniciales])
 
     const total = useMemo(() => {
         return items.reduce((sum, item) => {
@@ -76,13 +88,13 @@ export default function FormularioPedido({ onCrear, creando, clientes, productos
             onChange: setEstado,
             options: ESTADOS_PEDIDO.map(item => ({ value: item, label: item })),
         },
-        {
-            name: 'fecha',
-            label: 'Fecha',
-            type: 'date',
-            value: fecha,
-            onChange: setFecha,
-        },
+            {
+                name: 'fecha',
+                label: 'Fecha',
+                type: 'date',
+                value: fecha,
+                onChange: setFecha,
+            },
         {
             name: 'productos',
             render: () => (
@@ -94,15 +106,23 @@ export default function FormularioPedido({ onCrear, creando, clientes, productos
 
                     {items.map((item, index) => (
                         <div key={index} className="ped-item-row">
-                            <select
+                            <DropdownMenu
                                 value={item.productoId}
-                                onChange={e => updateItem(index, 'productoId', e.target.value)}
-                            >
-                                <option value="">Seleccionar...</option>
-                                {productos.map(producto => (
-                                    <option key={producto.id} value={producto.id}>{producto.nombre}</option>
-                                ))}
-                            </select>
+                                placeholder="Seleccionar..."
+                                options={[
+                                    {
+                                        value: '',
+                                        label: 'Seleccionar...',
+                                    },
+                                    ...productos.map(producto => ({
+                                        value: producto.id,
+                                        label: producto.nombre,
+                                    })),
+                                ]}
+                                onChange={value =>
+                                    updateItem(index, 'productoId', value)
+                                }
+                            />
                             <input
                                 type="number"
                                 min="1"

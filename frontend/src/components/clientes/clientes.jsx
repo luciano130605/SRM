@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import api from "../../../services/api"
-import "./clientes.css"
 import TarjetaCliente from "./tarjeta-cliente"
 import FormularioCliente from "./formulario-cliente"
 import Buscador from "../buscador/buscador"
@@ -14,6 +13,7 @@ import ToastDeshacer from "../toast-deshacer/toast-deshacer"
 import Toast from "../toast/toast"
 import useEliminacionDeshacer from "../../hooks/use-eliminacion-deshacer"
 import { exportarCsv, normalizarTexto, obtenerValorFila, parsearTablaCsv } from "../../utils/csv"
+import DropdownMenu from '../../dropdown-menu/dropdown-menu'
 
 const POR_PAGINA = 10
 
@@ -27,7 +27,7 @@ const comandosClientes = [
     { teclas: 'Esc', accion: 'Cerrar ventanas' }
 ]
 
-function Clientes() {
+function Clientes({ datosIniciales }) {
     const [clientes, setClientes] = useState([])
     const [pedidos, setPedidos] = useState([])
     const [creando, setCreando] = useState(false)
@@ -43,7 +43,7 @@ function Clientes() {
     const buscadorRef = useRef(null)
     const inputImportRef = useRef(null)
     const [metodos, setMetodos] = useState([])
-
+    const [ordenAbierto, setOrdenAbierto] = useState(false)
 
     const {
         toastDeshacer,
@@ -121,7 +121,15 @@ function Clientes() {
             mostrarError('No se pudieron cargar los clientes.')
         }
     }
+    const opcionesOrden = [
+        { value: "reciente", label: "Más reciente" },
+        { value: "az", label: "A - Z" },
+        { value: "za", label: "Z - A" },
+        { value: "mas-pedidos", label: "Más pedidos" },
+    ]
 
+    const ordenActual =
+        opcionesOrden.find(op => op.value === orden)?.label || "Más reciente"
     function mostrarError(mensaje) {
         setToast({ mensaje, tipo: 'error' })
         window.setTimeout(() => setToast(null), 3500)
@@ -262,7 +270,7 @@ function Clientes() {
         }
 
         function handleKeyDown(e) {
-            const tecla = e.key.toLowerCase()
+            const tecla = String(e.key || '').toLowerCase()
             const conCtrl = e.ctrlKey || e.metaKey
 
             if (e.key === 'Escape') {
@@ -311,18 +319,18 @@ function Clientes() {
     const hayFiltros = busqueda.trim()
 
     return (
-        <div className="cli-contenedor">
-            <header className="cli-header">
+        <div className="page-container cli-contenedor">
+            <header className="page-header cli-header">
                 <div>
-                    <p className="cli-label">Sistema de gestion</p>
-                    <h1 className="cli-title"><em>Clientes</em></h1>
+                    <p className="page-label cli-label">Sistema de gestion</p>
+                    <h1 className="page-title cli-title"><em>Clientes</em></h1>
                 </div>
-                <span className="cli-header-count">
+                <span className="page-count cli-header-count">
                     {clientes.length} {clientes.length === 1 ? 'cliente' : 'clientes'}
                 </span>
             </header>
 
-            <div className="cli-toolbar">
+            <div className="page-toolbar cli-toolbar">
                 <Comandos
                     abierto={comandosAbiertos}
                     setAbierto={setComandosAbiertos}
@@ -335,38 +343,53 @@ function Clientes() {
                     onChange={handleBusquedaChange}
                     placeholder="Buscar por nombre o telefono..."
                 />
-                <select className="cli-select" value={orden} onChange={handleOrdenChange}>
-                    <option value="reciente">Mas reciente</option>
-                    <option value="az">A - Z</option>
-                    <option value="za">Z - A</option>
-                    <option value="mas-pedidos">Mas pedidos</option>
-                </select>
+                <div className="toolbar-dropdown">
+                    <button
+                        type="button"
+                        className="toolbar-select"
+                        onClick={() => setOrdenAbierto(v => !v)}
+                    >
+                        {ordenActual}
+                    </button>
+
+                    <DropdownMenu
+                        abierto={ordenAbierto}
+                        onCerrar={() => setOrdenAbierto(false)}
+                        opciones={opcionesOrden}
+                        onSeleccionar={({ value }) => {
+                            setOrden(value)
+                            setPagina(1)
+                            setOrdenAbierto(false)
+                        }}
+                    />
+                </div>
                 {hayFiltros && (
                     <span className="cli-results-label">{procesados.length} resultado{procesados.length !== 1 ? 's' : ''}</span>
                 )}
             </div>
 
-            <div className="cli-layout">
+            <div className="page-layout cli-layout">
                 <FormularioCliente
                     onCrear={crearCliente}
                     creando={creando}
                     metodos={metodos}
                     setMetodos={setMetodos}
                     onError={mostrarError}
+                    datosIniciales={datosIniciales}
                 />
 
                 <section>
-                    <h2 className="cli-list-header">
+                    <h2 className="section-heading cli-list-header">
                         Directorio
                         {clientes.length > 0 && (
-                            <span className="cli-badge">
+                            <span className="count-badge cli-badge">
                                 {hayFiltros ? `${procesados.length} / ${clientes.length}` : clientes.length}
                             </span>
                         )}
                     </h2>
 
                     <div className="catalogo-actions">
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                        <div className="action-row">
 
                             <LimpiarTodo
                                 onLimpiar={limpiarClientes}
@@ -374,7 +397,7 @@ function Clientes() {
                                 titulo="Eliminar todos los clientes"
                             />
 
-                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem" }}>
+                            <div className="action-group">
 
                                 <ImportExport
                                     onExportar={exportarClientesSheet}
@@ -396,7 +419,7 @@ function Clientes() {
                     )}
 
                     {procesados.length === 0
-                        ? <p className="cli-empty">Ningun cliente encontrado.</p>
+                        ? <p className="empty-state cli-empty">Ningun cliente encontrado.</p>
                         : <>
                             {vista === 'tabla' ? (
                                 <TablaClientes
@@ -445,3 +468,4 @@ function Clientes() {
 }
 
 export default Clientes
+

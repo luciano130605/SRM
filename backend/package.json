@@ -12,12 +12,13 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@open-wa/wa-automate": "^4.76.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@whiskeysockets/baileys": "^7.0.0-rc11",
     "cors": "^2.8.6",
     "dotenv": "^16.4.7",
     "express": "^5.2.1",
     "nodemon": "^3.1.14",
+    "qrcode": "^1.5.4",
     "uuid": "^14.0.0"
   }
 }

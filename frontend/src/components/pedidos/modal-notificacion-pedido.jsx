@@ -31,11 +31,14 @@ export default function ModalNotificacionPedido({ pedido, cliente, nuevoEstado, 
     const [mensaje, setMensaje] = useState('')
     const [enviando, setEnviando] = useState(false)
     const [copiado, setCopiado] = useState(false)
-    const [estadoWA, setEstadoWA] = useState(null) 
-    const [resultadoEnvio, setResultadoEnvio] = useState(null) 
+    const [estadoWA, setEstadoWA] = useState(null)
+    const [resultadoEnvio, setResultadoEnvio] = useState(null)
 
     const telefono = normalizarTelefono(cliente?.telefono)
     const instagram = normalizarInstagram(cliente?.instagram)
+    const estadoClass = nuevoEstado
+        .toLowerCase()
+        .replace(/\s+/g, "-");
 
     useEffect(() => {
         setMensaje(generarMensaje(nuevoEstado, cliente, pedido?.id))
@@ -87,8 +90,11 @@ export default function ModalNotificacionPedido({ pedido, cliente, nuevoEstado, 
                 </div>
 
                 <p className="notif-subtitulo">
-                    Estado actualizado a <strong>{nuevoEstado}</strong>.
-                    Editá el mensaje y elegí cómo enviarlo.
+                    Estado actualizado a{" "}
+                    <span className={`noti-estado-chip noti-estado-${estadoClass.toLowerCase()}`}>
+                        {nuevoEstado}
+                    </span>
+                    . Editá el mensaje y elegí cómo enviarlo.
                 </p>
 
                 <textarea
@@ -99,35 +105,6 @@ export default function ModalNotificacionPedido({ pedido, cliente, nuevoEstado, 
                 />
 
                 <div className="notif-acciones">
-                    {estadoWA === 'conectado' && telefono && (
-                        <button
-                            className="btn-notif btn-wa-api"
-                            onClick={enviarPorWhatsapp}
-                            disabled={enviando}
-                            title="Enviar por WhatsApp (API conectada)"
-                        >
-                            {/* <Whatsapp /> */}
-                            {enviando ? 'Enviando...' : 'Enviar por WPP'}
-                        </button>
-                    )}
-
-                    {telefono && (
-                        <button
-                            className="btn-notif btn-wa-web"
-                            onClick={abrirWhatsappWeb}
-                            title="Abrir en WhatsApp Web con el mensaje prellenado"
-                        >
-                            {/* <Whatsapp /> */}
-                            {estadoWA === 'conectado' ? 'WPP Web' : 'WhatsApp Web'}
-                        </button>
-                    )}
-
-                    {instagram && (
-                        <button className="btn-notif btn-ig" onClick={abrirInstagram} title="Abrir Instagram">
-                            {/* <Instagram /> */}
-                            Instagram
-                        </button>
-                    )}
 
                     <button className="btn-notif btn-copiar" onClick={copiar}>
                         {copiado ? <CopySuccess /> : <Copy />}
@@ -135,14 +112,7 @@ export default function ModalNotificacionPedido({ pedido, cliente, nuevoEstado, 
                     </button>
                 </div>
 
-                {!telefono && !instagram && (
-                    <p className="notif-sin-contacto">
-                        Este cliente no tiene teléfono ni Instagram cargado.
-                    </p>
-                )}
 
-                {resultadoEnvio === 'ok' && <p className="notif-resultado ok">Mensaje enviado correctamente.</p>}
-                {resultadoEnvio === 'error' && <p className="notif-resultado error">No se pudo enviar. Intentá por WPP Web.</p>}
             </div>
         </div>
     )

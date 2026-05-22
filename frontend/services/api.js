@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-    baseURL: "http://127.0.0.1:3011"
+    baseURL: "http://192.168.0.192:3011"
 })
 
 function limpiarSesion() {
@@ -14,6 +14,7 @@ function limpiarSesion() {
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('srm_token')
 
+    config.headers = config.headers || {}
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }

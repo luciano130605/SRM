@@ -1,5 +1,3 @@
-import "./tarjeta.css"
-
 export default function Tarjeta({
     className = '',
     editando = false,
@@ -29,3 +27,4 @@ export default function Tarjeta({
         </article>
     )
 }
+

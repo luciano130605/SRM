@@ -42,7 +42,7 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
     }
 
     if (clientes.length === 0) {
-        return <p className="cli-empty">Ningun cliente encontrado.</p>
+        return <p className="empty-state cli-empty">Ningun cliente encontrado.</p>
     }
 
     return (
@@ -68,7 +68,7 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                                     {editando ? (
                                         <input
                                             autoFocus
-                                            className="cli-tabla-input"
+                                            className="table-input cli-tabla-input"
                                             value={draft.nombre}
                                             onChange={e => setDraft(d => ({ ...d, nombre: e.target.value }))}
                                             onKeyDown={e => handleDraftKey(e, cliente.id)}
@@ -92,7 +92,7 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                                                 ? vals.map((val, i) => (
                                                     <input
                                                         key={i}
-                                                        className="cli-tabla-input"
+                                                        className="table-input cli-tabla-input"
                                                         value={val}
                                                         placeholder={`${metodo.nombre}...`}
                                                         onChange={e => setContactoDraft(metodo.id, i, e.target.value)}
@@ -108,10 +108,11 @@ export default function TablaClientes({ clientes, onEliminar, onEditar, pedidosP
                                 <td data-label="Direccion">
                                     {editando ? (
                                         <input
-                                            className="cli-tabla-input"
+                                            className="table-input cli-tabla-input"
                                             value={draft.direccion}
                                             onChange={e => setDraft(d => ({ ...d, direccion: e.target.value }))}
                                             onKeyDown={e => handleDraftKey(e, cliente.id)}
+                                            place
                                         />
                                     ) : cliente.direccion || '-'}
                                 </td>

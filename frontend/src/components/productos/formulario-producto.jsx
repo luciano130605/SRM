@@ -1,15 +1,26 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import GestorCategorias from './gestor-categorias'
 import Formulario from "../formulario/formulario"
 import CalculadoraCosto from "./calculadora-costo"
 import SugerenciaIA from "../ia/sugerencia-ia"
+import DropdownMenu from "../../dropdown-menu/dropdown-menu"
 
-export default function FormularioProducto({ onCrear, creando, categorias, setCategorias, productosPorCategoria, nombreInputRef, onError }) {
+export default function FormularioProducto({ datosIniciales, onCrear, creando, categorias, setCategorias, productosPorCategoria, nombreInputRef, onError }) {
     const [nombre, setNombre] = useState('')
     const [categoria, setCategoria] = useState('')
     const [costo, setCosto] = useState('')
     const [precioVenta, setPrecioVenta] = useState('')
     const [versionSugerencia, setVersionSugerencia] = useState(0)
+    const [categoriaAbierta, setCategoriaAbierta] = useState(false)
+
+    useEffect(() => {
+        if (!datosIniciales) return
+
+        setNombre(String(datosIniciales.nombre ?? ""))
+        setCategoria(String(datosIniciales.categoriaId ?? ""))
+        setCosto(String(datosIniciales.costo ?? ""))
+        setPrecioVenta(String(datosIniciales.precioVenta ?? ""))
+    }, [datosIniciales])
 
     function handleCrear() {
         if (!nombre.trim() || !precioVenta) return
@@ -44,17 +55,49 @@ export default function FormularioProducto({ onCrear, creando, categorias, setCa
         },
         {
             name: 'categoria',
-            label: 'Categoria',
-            type: 'select',
-            value: categoria,
-            onChange: valor => {
-                setCategoria(valor)
-                setVersionSugerencia(v => v + 1)
+            render: () => {
+                const categoriaActual =
+                    categorias.find(cat => cat.id === categoria)?.nombre ||
+                    'Sin categoría'
+
+                return (
+                    <div className="form-label-Conteiner">
+                        <label className="form-label">
+                            Categoría
+                        </label>
+
+                        <div className="dropdown-field">
+                            <button
+                                type="button"
+                                className="form-input dropdown-trigger"
+                                onClick={() => setCategoriaAbierta(v => !v)}
+                            >
+                                {categoriaActual}
+                            </button>
+
+                            <DropdownMenu
+                                abierto={categoriaAbierta}
+                                onCerrar={() => setCategoriaAbierta(false)}
+                                opciones={[
+                                    {
+                                        value: '',
+                                        label: 'Sin categoría',
+                                    },
+                                    ...categorias.map(cat => ({
+                                        value: cat.id,
+                                        label: cat.nombre,
+                                    })),
+                                ]}
+                                onSeleccionar={({ value }) => {
+                                    setCategoria(value)
+                                    setVersionSugerencia(v => v + 1)
+                                    setCategoriaAbierta(false)
+                                }}
+                            />
+                        </div>
+                    </div>
+                )
             },
-            options: [
-                { value: '', label: 'Sin categoria' },
-                ...categorias.map(cat => ({ value: cat.id, label: cat.nombre })),
-            ],
         },
         {
             name: 'costo',

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import api from '../../../services/api'
-import './auth.css'
 import EyeIcon from '../../icons/EyeAnimate'
 import EyeOffIcon from "../../icons/EyeOffAnimate"
 
@@ -161,3 +160,4 @@ export default function Registro({ onRegistro }) {
         </form>
     )
 }
+

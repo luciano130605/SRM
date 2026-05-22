@@ -1,5 +1,3 @@
-import "./paginacion.css"
-
 export default function Paginacion({
     pagina,
     total,
@@ -42,3 +40,4 @@ export default function Paginacion({
         </div>
     )
 }
+

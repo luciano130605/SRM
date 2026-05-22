@@ -1,4 +1,6 @@
-export const IconPedido = ({ size = 16, color = "white" }) => (
+import { useState } from "react";
+
+export const IconPedido = ({ size = 16, color = "currentColor" }) => (
     <svg className="acceso-svg acceso-svg--pedido" width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g className="pedido-sheet">
             <path d="M21.93 6.761L18.56 20.291C18.32 21.301 17.42 22.001 16.38 22.001H3.24C1.73 22.001 0.65 20.521 1.1 19.071L5.31 5.551C5.6 4.611 6.47 3.961 7.45 3.961H19.75C20.7 3.961 21.49 4.541 21.82 5.341C22.01 5.771 22.05 6.261 21.93 6.761Z" stroke={color} strokeWidth="1.5" strokeMiterlimit="10" />
@@ -11,7 +13,7 @@ export const IconPedido = ({ size = 16, color = "white" }) => (
     </svg>
 )
 
-export const IconProducto = ({ size = 16, color = "white" }) => (
+export const IconProducto = ({ size = 16, color = "currentColor" }) => (
     <svg className="acceso-svg acceso-svg--producto" width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g className="producto-box producto-box--main">
             <path d="M3.17 7.439L12 12.549L20.77 7.469" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -23,7 +25,7 @@ export const IconProducto = ({ size = 16, color = "white" }) => (
     </svg>
 )
 
-export const IconCliente = ({ size = 16, color = "white" }) => (
+export const IconCliente = ({ size = 16, color = "currentColor" }) => (
     <svg className="acceso-svg acceso-svg--cliente" width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g className="cliente-main">
             <path d="M12 12C14.761 12 17 9.761 17 7C17 4.239 14.761 2 12 2C9.239 2 7 4.239 7 7C7 9.761 9.239 12 12 12Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -37,7 +39,7 @@ export const IconCliente = ({ size = 16, color = "white" }) => (
     </svg>
 )
 
-export const IconEntrega = ({ size = 16, color = "white" }) => (
+export const IconEntrega = ({ size = 16, color = "currentColor" }) => (
     <svg className="acceso-svg acceso-svg--entrega" width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g className="entrega-truck">
             <path d="M15 2V12C15 13.1 14.1 14 13 14H2V6C2 3.79 3.79 2 6 2H15Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -57,32 +59,43 @@ export default function AccesoRapido({
     onVerEntregas,
     soloBotones = false,
 }) {
+    const [animando, setAnimando] = useState(null);
+
+    const handleClick = (label, callback) => {
+        setAnimando(label);
+
+        setTimeout(() => {
+            setAnimando(null);
+        }, 500);
+
+        callback?.();
+    };
     const acciones = [
         {
             label: 'Nuevo pedido',
             desc: 'Registrar venta',
-            icon: <IconPedido />,
+            icon: <IconPedido color="white" />,
             onClick: onNuevoPedido,
             color: 'var(--pink)',
         },
         {
             label: 'Agregar producto',
             desc: 'Al catalogo',
-            icon: <IconProducto />,
+            icon: <IconProducto color="white" />,
             onClick: onAgregarProducto,
             color: 'var(--green)',
         },
         {
             label: 'Agregar cliente',
             desc: 'Nueva persona',
-            icon: <IconCliente />,
+            icon: <IconCliente color="white" />,
             onClick: onAgregarCliente,
             color: 'var(--amber)',
         },
         {
             label: 'Ver entregas',
             desc: 'Pendientes hoy',
-            icon: <IconEntrega />,
+            icon: <IconEntrega color="white" />,
             onClick: onVerEntregas,
             color: 'var(--pink-dark)',
         },
@@ -91,13 +104,14 @@ export default function AccesoRapido({
     const botones = acciones.map(({ label, desc, icon, onClick, color }) => (
         <button
             key={label}
-            className="acceso-btn"
+            className={`acceso-btn ${animando === label ? 'animando' : ''}`}
             style={{ '--acceso-color': color }}
-            onClick={onClick}
+            onClick={() => handleClick(label, onClick)}
             type="button"
             aria-label={label}
         >
             <span className="acceso-icon">{icon}</span>
+
             <span className="acceso-text">
                 <span className="acceso-label">{label}</span>
                 <span className="acceso-desc">{desc}</span>

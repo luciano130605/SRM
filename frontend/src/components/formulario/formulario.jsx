@@ -1,5 +1,5 @@
-import "./formulario.css"
-
+import SelectDropdown from "../../dropdown-menu/select-dropdown"
+import DateField from "../../dropdown-menu/date-field"
 export default function Formulario({
     titulo,
     campos,
@@ -37,19 +37,20 @@ export default function Formulario({
                             </label>
 
                             {campo.type === 'select' ? (
-                                <select
-                                    id={campo.name}
-                                    name={campo.name}
-                                    className="form-input"
+                                <SelectDropdown
                                     value={campo.value}
-                                    onChange={event => campo.onChange(event.target.value)}
-                                >
-                                    {campo.options.map(option => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={campo.options}
+                                    onChange={campo.onChange}
+                                    placeholder={campo.placeholder}
+                                />
+                            ) : campo.type === 'date' ? (
+                                <DateField
+                                    name={campo.name}
+                                    label={campo.label}
+                                    value={campo.value}
+                                    onChange={campo.onChange}
+                                    required={campo.required}
+                                />
                             ) : (
                                 <input
                                     id={campo.name}
@@ -83,3 +84,4 @@ export default function Formulario({
         </aside>
     )
 }
+

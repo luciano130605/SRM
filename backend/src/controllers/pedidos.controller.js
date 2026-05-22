@@ -145,7 +145,8 @@ async function actualizarEstadoPedido(req, res) {
         .select('*, clientes(id, nombre)')
         .single()
 
-    if (error) return res.status(500).json({ ok: false, mensaje: error.message })
+    if (error) 
+        return res.status(500).json({ ok: false, mensaje: error.message })
     if (!data) return res.status(404).json({ ok: false, mensaje: 'Pedido no encontrado' })
 
     res.status(200).json({ ok: true, data: mapPedido(data) })

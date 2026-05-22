@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createPortal } from 'react-dom'
 import Calculadora from "../../icons/Calculadora";
 import X from "../../icons/X";
 import calcularCostoIngrediente from "./calcular-costo-ingrendientes";
 import FilaIngrediente from "./fila-ingredientes";
+import api from "../../../services/api";
+import ScanBarcodeIcon from "../../icons/ScanBarCodeMovimiento";
 
 function crearIngrediente() {
     return {
-        id: crypto.randomUUID(),
+        id: Date.now() + Math.random(),
         nombre: '',
         cantComprada: '',
         unidad: 'u',
@@ -21,6 +23,48 @@ export default function CalculadoraCosto({ nombreProducto, onAplicar }) {
     const [abierto, setAbierto] = useState(false)
     const [ingredientes, setIngredientes] = useState([crearIngrediente()])
     const [focusUltimo, setFocusUltimo] = useState(false)
+    const inputRef = useRef(null)
+    const [escaneando, setEscaneando] = useState(false)
+
+    async function manejarArchivo(e) {
+        const archivo = e.target.files?.[0]
+        if (!archivo) return
+
+        setEscaneando(true)
+        try {
+            const base64 = await new Promise((res, rej) => {
+                const r = new FileReader()
+                r.onload = () => res(r.result.split(',')[1])
+                r.onerror = rej
+                r.readAsDataURL(archivo)
+            })
+
+            const resp = await api.post('/ia/scanear-comprobante', {
+                archivoBase64: base64,
+                mimeType: archivo.type
+            })
+            const items = resp.data?.data ?? resp.data
+
+            const nuevos = items.map(item => ({
+                id: Date.now() + Math.random(),
+                nombre: item.nombre,
+                cantComprada: String(item.cantidadComprada),
+                unidad: item.unidad || 'u',
+                precioCompra: String(item.precioUnitario * item.cantidadComprada),
+                cantUsada: '',
+            }))
+
+            setIngredientes(prev => {
+                const soloVacia = prev.length === 1 && !prev[0].nombre
+                return soloVacia ? nuevos : [...prev, ...nuevos]
+            })
+        } catch (err) {
+            alert('No se pudo escanear el ticket: ' + err.message)
+        } finally {
+            setEscaneando(false)
+            e.target.value = ''
+        }
+    }
 
 
     const costoTotal = ingredientes.reduce((acc, i) => {
@@ -113,6 +157,7 @@ export default function CalculadoraCosto({ nombreProducto, onAplicar }) {
                             Agregar ingrediente
                         </button>
 
+
                         <div className="cc-resumen">
                             <div className="cc-resumen-info">
                                 <span className="cc-resumen-label">Costo de produccion</span>
@@ -130,8 +175,25 @@ export default function CalculadoraCosto({ nombreProducto, onAplicar }) {
                             >
                                 Aplicar al formulario
                             </button>
-                        </div>
 
+                            <input
+                                ref={inputRef}
+                                type="file"
+                                accept="application/pdf,image/*"
+                                style={{ display: 'none' }}
+                                onChange={manejarArchivo}
+                            />
+
+                        </div>
+                        <button
+                            type="button"
+                            className="cc-fab-scan"
+                            onClick={() => inputRef.current.click()}
+                            title="Escanear ticket / comprobante"
+                            disabled={escaneando}
+                        >
+                            {escaneando ? 'Escaneando...' : <ScanBarcodeIcon size={24}  />}
+                        </button>
                         <p className="cc-hint">
                             Se aplicara solo el costo calculado.
                         </p>

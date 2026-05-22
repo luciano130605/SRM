@@ -47,13 +47,13 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
     }
 
     if (productos.length === 0) {
-        return <p className="sin-productos">Ningun producto encontrado.</p>
+        return <p className="empty-state sin-productos">Ningun producto encontrado.</p>
     }
 
     return (
         <div>
-            <div className="tabla-productos-wrap">
-                <table className="tabla-productos">
+            <div className="data-table-wrap tabla-productos-wrap">
+                <table className="data-table tabla-productos">
                     <thead>
                         <tr>
                             <th>Producto</th>
@@ -78,7 +78,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
                                     <td data-label="Producto">
                                         {editando ? (
                                             <input
-                                                className="tabla-input"
+                                                className="table-input tabla-input"
                                                 autoFocus
                                                 value={draft.nombre}
                                                 onChange={e => setDraft(d => ({ ...d, nombre: e.target.value }))}
@@ -92,7 +92,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
                                     <td data-label="Categoria">
                                         {editando ? (
                                             <select
-                                                className="tabla-input"
+                                                className="table-input tabla-input"
                                                 value={draft.categoriaId}
                                                 onChange={e => setDraft(d => ({ ...d, categoriaId: e.target.value }))}
                                                 onKeyDown={e => handleDraftKey(e, producto.id)}
@@ -112,7 +112,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
                                     <td data-label="Costo">
                                         {editando ? (
                                             <input
-                                                className="tabla-input tabla-input-number"
+                                                className="table-input table-input-number tabla-input tabla-input-number"
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
@@ -128,7 +128,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
                                     <td data-label="Venta">
                                         {editando ? (
                                             <input
-                                                className="tabla-input tabla-input-number"
+                                                className="table-input table-input-number tabla-input tabla-input-number"
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
@@ -145,7 +145,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, catego
                                         {margen !== null ? `${margen}%` : '-'}
                                     </td>
 
-                                    <td className="tabla-actions">
+                                    <td className="table-actions tabla-actions">
                                         {editando ? (
                                             <>
                                                 <button className="btn-icon btn-save" onClick={() => guardarEdicion(producto.id)} title="Guardar">

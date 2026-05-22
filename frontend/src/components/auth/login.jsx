@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import EyeIcon from '../../icons/EyeAnimate'
 import EyeOffIcon from "../../icons/EyeOffAnimate"
 import api from '../../../services/api'
-import './auth.css'
 import ForgotPassword from "./forgot-pass"
 
 const fadeUp = {
@@ -11,7 +10,6 @@ const fadeUp = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
     exit: { opacity: 0, y: -8, transition: { duration: 0.16 } },
 }
-
 
 
 export default function Login({ onLogin, onScreenChange }) {
@@ -32,6 +30,7 @@ export default function Login({ onLogin, onScreenChange }) {
             onLogin(response.data.data)
         } catch (err) {
             setError(err.response?.data?.mensaje || 'No se pudo iniciar sesion.')
+            console.log(err)
         } finally {
             setCargando(false)
         }
@@ -80,7 +79,7 @@ export default function Login({ onLogin, onScreenChange }) {
                             onScreenChange?.(true)
                         }}
                     >
-                        Olvide mi contraseña
+                        Olvidé mi contraseña
                     </button>
                 </span>
                 <span className="auth-password">
@@ -113,3 +112,4 @@ export default function Login({ onLogin, onScreenChange }) {
         </motion.form>
     )
 }
+

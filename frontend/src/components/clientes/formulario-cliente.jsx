@@ -1,13 +1,22 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Formulario from "../formulario/formulario"
 import GestorMetodosContacto from "./gestor-metodos"
 import X from "../../icons/X"
 
-export default function FormularioCliente({ onCrear, creando, metodos = [], setMetodos, onError }) {
+export default function FormularioCliente({ onCrear, datosIniciales, creando, metodos = [], setMetodos, onError }) {
     const [nombre, setNombre] = useState('')
     const [direccion, setDireccion] = useState('')
     const [notas, setNotas] = useState('')
     const [contactos, setContactos] = useState({})
+
+    useEffect(() => {
+        if (!datosIniciales) return
+
+        setNombre(String(datosIniciales.nombre ?? ""))
+        setDireccion(String(datosIniciales.direccion ?? ""))
+        setContactos(datosIniciales.contactos ?? {})
+        setNotas(String(datosIniciales.notas ?? ""))
+    }, [datosIniciales])
 
     function setValor(metodId, index, valor) {
         setContactos(prev => {
@@ -85,7 +94,7 @@ export default function FormularioCliente({ onCrear, creando, metodos = [], setM
                 const valores = contactos[metodo.id] ?? ['']
                 return (
                     <div key={metodo.id} className="form-label-Conteiner">
-                        <label className="form-label">
+                        <label className="form-label required">
                             <span>{metodo.icono}</span> {metodo.nombre}
                         </label>
                         {valores.map((val, i) => (

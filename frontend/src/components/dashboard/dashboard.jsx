@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from "../../../services/api"
-import "./dashboard.css"
 import formatPrecio from './format-precio'
 import KPICard from './kpi-card'
 import PedidosRecientes from "./pedidos-recientes"
-import TopProductos from './top-productos'
 import ClientesActivos from './clientes-activos'
 import AccesoRapido from './acceso-rapido'
-import GraficaVentas from './grafica-ventas'
 import Comandos from '../comandos/comandos'
 import Toast from '../toast/toast'
 
@@ -31,56 +28,6 @@ function primerNombre(usuario) {
 
 function normalizarEstado(estado = '') {
     return estado.toLowerCase().trim() || 'pendiente'
-}
-
-function ChartEstados({ pedidos }) {
-    const datos = useMemo(() => {
-        const total = Math.max(pedidos.length, 1)
-        const base = [
-            { id: 'pendiente', label: 'Pendientes', color: 'var(--amber)', count: 0 },
-            { id: 'en proceso', label: 'En proceso', color: 'var(--pink-light)', count: 0 },
-            { id: 'entregado', label: 'Entregados', color: 'var(--green)', count: 0 },
-            { id: 'cancelado', label: 'Cancelados', color: 'var(--pink-dark)', count: 0 },
-        ]
-        const porId = Object.fromEntries(base.map(item => [item.id, item]))
-
-        pedidos.forEach(pedido => {
-            const estado = normalizarEstado(pedido.estado)
-            if (porId[estado]) porId[estado].count += 1
-            else porId.pendiente.count += 1
-        })
-
-        return base.map(item => ({
-            ...item,
-            pct: Math.round((item.count / total) * 100),
-        }))
-    }, [pedidos])
-
-    return (
-        <div className="dash-panel">
-            <div className="panel-head">
-                <span className="panel-head-title">Estado de pedidos</span>
-                <span className="panel-head-badge">{pedidos.length} total</span>
-            </div>
-
-            <div className="estado-chart">
-                {datos.map(item => (
-                    <div key={item.id} className="estado-chart-row">
-                        <div className="estado-chart-meta">
-                            <span>{item.label}</span>
-                            <strong>{item.count}</strong>
-                        </div>
-                        <div className="estado-chart-track" aria-label={`${item.label}: ${item.pct}%`}>
-                            <span
-                                className="estado-chart-fill"
-                                style={{ width: `${item.pct}%`, background: item.color }}
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
 }
 
 function AccionesDashboard({ onIrA }) {
@@ -191,19 +138,12 @@ export default function Dashboard({ usuario, onIrA = () => { } }) {
             </div>
 
             <div className="dash-grid">
-                <GraficaVentas pedidos={pedidos} />
-                <ChartEstados pedidos={pedidos} />
-            </div>
-
-            <div className="dash-grid-3">
                 <PedidosRecientes pedidos={pedidos} clientes={clientes} />
                 <ClientesActivos clientes={clientes} pedidos={pedidos} />
             </div>
 
-            <div className="dash-top-section">
-                <TopProductos pedidos={pedidos} />
-            </div>
             <Toast mensaje={toast?.mensaje} tipo={toast?.tipo} />
         </div>
     )
 }
+

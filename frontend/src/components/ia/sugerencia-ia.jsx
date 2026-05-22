@@ -1,8 +1,7 @@
 import { useRef, useState } from "react"
 import api from "../../../services/api"
 import BrainMovimiento from "../../icons/BrainMovimiento"
-import "./sugerencia-ia.css"
-
+import SparklesIcon from "../../icons/IaMovimiento"
 export default function SugerenciaIA({
     endpoint = '/ia/precio-venta',
     payload,
@@ -33,7 +32,8 @@ export default function SugerenciaIA({
         } finally {
             setCargando(false)
         }
-    }
+    } 
+    const sparkleRef = useRef(null);
 
     return (
         <div className="ia-sugerencia">
@@ -42,12 +42,12 @@ export default function SugerenciaIA({
                 className="ia-sugerencia-trigger"
                 onClick={consultar}
                 disabled={disabled || cargando}
-                onMouseEnter={() => brainRef.current?.startAnimation()}
-                onMouseLeave={() => brainRef.current?.stopAnimation()}
+                onMouseEnter={() => sparkleRef.current?.startAnimation()}
+                onMouseLeave={() => sparkleRef.current?.stopAnimation()}
             >
                 {cargando
                     ? <><span className="ia-sugerencia-spinner" /> Consultando...</>
-                    : <><BrainMovimiento ref={brainRef} /> {label}</>
+                    : <><SparklesIcon ref={sparkleRef} size={14}/> {label}</>
                 }
             </button>
 
@@ -68,3 +68,4 @@ export default function SugerenciaIA({
         </div>
     )
 }
+

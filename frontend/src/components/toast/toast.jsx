@@ -1,5 +1,3 @@
-import "./toast.css"
-
 export default function Toast({ mensaje, tipo = 'info', accion, textoAccion = 'Deshacer' }) {
     if (!mensaje) return null
 
@@ -14,3 +12,4 @@ export default function Toast({ mensaje, tipo = 'info', accion, textoAccion = 'D
         </div>
     )
 }
+

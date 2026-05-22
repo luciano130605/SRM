@@ -1,10 +1,15 @@
+const crypto = require('crypto')
 const supabase = require('../supabase')
 
 function mapAuthData(data) {
+    const nombre = data.user?.user_metadata?.nombre || data.user?.email?.split('@')[0] || ''
+
     return {
         user: data.user ? {
             id: data.user.id,
             email: data.user.email,
+            nombre,
+            displayName: nombre,
         } : null,
         session: data.session ? {
             accessToken: data.session.access_token,
@@ -18,12 +23,15 @@ async function login(req, res) {
     const { email, password } = req.body
 
     if (!email || !password) {
-        return res.status(400).json({ ok: false, mensaje: 'Faltan email y contrasena' })
+        return res.status(400).json({ ok: false, mensaje: 'Faltan email y contrasñna' })
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) return res.status(401).json({ ok: false, mensaje: error.message })
+    if (error) {
+        console.log('[login] error de supabase:', error.message, error.status)
+        return res.status(401).json({ ok: false, mensaje: error.message })
+    }
 
     res.status(200).json({ ok: true, data: mapAuthData(data) })
 }
@@ -32,7 +40,7 @@ async function registro(req, res) {
     const { email, password, nombre } = req.body
 
     if (!email || !password) {
-        return res.status(400).json({ ok: false, mensaje: 'Faltan email y contrasena' })
+        return res.status(400).json({ ok: false, mensaje: 'Faltan email y contraseña' })
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -44,6 +52,19 @@ async function registro(req, res) {
     })
 
     if (error) return res.status(400).json({ ok: false, mensaje: error.message })
+
+    const nombreTrim = nombre?.trim() || ''
+    const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
+
+    if (supabase.admin) {
+        try {
+            await supabase.admin
+                .from('usuarios')
+                .insert([{ nombre: nombreTrim, email: email.trim(), password_hash: passwordHash }])
+        } catch (insertError) {
+            console.warn('No se pudo guardar en usuarios:', insertError.message)
+        }
+    }
 
     res.status(201).json({ ok: true, data: mapAuthData(data) })
 }
@@ -59,7 +80,7 @@ async function recuperarContrasena(req, res) {
 
     if (error) return res.status(400).json({ ok: false, mensaje: error.message })
 
-    res.status(200).json({ ok: true, mensaje: 'Te enviamos un email para recuperar la contrasena' })
+    res.status(200).json({ ok: true, mensaje: 'Te enviamos un email para recuperar la contraseña' })
 }
 
 async function refrescarSesion(req, res) {

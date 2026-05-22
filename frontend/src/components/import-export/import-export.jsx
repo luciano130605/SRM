@@ -1,5 +1,4 @@
 import { useRef } from "react"
-import "./import-export.css"
 import Export from "../../icons/Export"
 import Import from "../../icons/Import"
 
@@ -31,6 +30,7 @@ export default function ImportExport({
                 title="Exportar en CSV"
             >
                 <Export />
+                <span className="button-label">Exportar</span>
             </button>
 
             <button
@@ -39,7 +39,8 @@ export default function ImportExport({
                 type="button"
                 title="Importar en CSV"
             >
-               <Import />
+                <Import />
+                <span className="button-label">Importar</span>
             </button>
 
             <input
@@ -52,3 +53,4 @@ export default function ImportExport({
         </div>
     )
 }
+

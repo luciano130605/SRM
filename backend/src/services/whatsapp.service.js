@@ -1,7 +1,9 @@
-let clienteWA = null
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys')
+const qrcode = require('qrcode')
+
+let sock = null
 let estadoConexion = 'desconectado'
-let qrActual = null
-let sseClients = [] 
+let sseClients = []
 
 function emitirSSE(evento, datos) {
     const payload = `event: ${evento}\ndata: ${JSON.stringify(datos)}\n\n`
@@ -11,70 +13,68 @@ function emitirSSE(evento, datos) {
     })
 }
 
-function registrarSSE(res) {
-    sseClients.push(res)
-}
-
-function desregistrarSSE(res) {
-    sseClients = sseClients.filter(r => r !== res)
-}
+function registrarSSE(res) { sseClients.push(res) }
+function desregistrarSSE(res) { sseClients = sseClients.filter(r => r !== res) }
+function obtenerEstado() { return { estado: estadoConexion } }
 
 async function iniciarWhatsapp(onMensaje) {
     if (estadoConexion === 'conectado' || estadoConexion === 'conectando') return
 
     estadoConexion = 'conectando'
-    qrActual = null
-    emitirSSE('estado', { estado: 'conectando', qr: null })
+    emitirSSE('estado', { estado: 'conectando' })
 
-    const { create } = require('@open-wa/wa-automate')
+    const { state, saveCreds } = await useMultiFileAuthState('./wa-session')
 
-    try {
-        clienteWA = await create({
-            sessionId: 'srm-session',
-            headless: true,
-            qrTimeout: 0,
-            authTimeout: 0,
-            killProcessOnBrowserClose: true,
-            throwErrorOnTosBlock: false,
-            qrRefreshS: 15,
-            onQr: (qrBase64) => {
-                qrActual = qrBase64
-                emitirSSE('qr', { qr: qrBase64 })
-            },
-        })
+    sock = makeWASocket({ auth: state, printQRInTerminal: false })
 
-        clienteWA.onMessage(onMensaje)
-        estadoConexion = 'conectado'
-        qrActual = null
-        emitirSSE('estado', { estado: 'conectado', qr: null })
+    sock.ev.on('creds.update', saveCreds)
 
-    } catch (error) {
-        estadoConexion = 'error'
-        emitirSSE('estado', { estado: 'error', qr: null })
-        console.error('[WA] Error al iniciar:', error.message)
-    }
-}
+    sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
+        if (qr) {
+            const qrBase64 = await qrcode.toDataURL(qr)
+            emitirSSE('qr', { qr: qrBase64 })
+        }
 
-function obtenerEstado() {
-    return { estado: estadoConexion, qr: qrActual }
+        if (connection === 'open') {
+            estadoConexion = 'conectado'
+            emitirSSE('estado', { estado: 'conectado' })
+        }
+
+        if (connection === 'close') {
+            const code = lastDisconnect?.error?.output?.statusCode
+            const reconectar = code !== DisconnectReason.loggedOut
+
+            estadoConexion = 'desconectado'
+            emitirSSE('estado', { estado: 'desconectado' })
+
+            if (reconectar) {
+                setTimeout(() => iniciarWhatsapp(onMensaje), 3000)
+            }
+        }
+    })
+
+    sock.ev.on('messages.upsert', async ({ messages }) => {
+        for (const msg of messages) {
+            if (!msg.key.fromMe && msg.message) {
+                await onMensaje(msg).catch(console.error)
+            }
+        }
+    })
 }
 
 async function enviarMensaje(numero, mensaje) {
-    if (!clienteWA || estadoConexion !== 'conectado')
+    if (!sock || estadoConexion !== 'conectado')
         throw new Error('WhatsApp no está conectado')
 
-    const id = numero.replace(/\D/g, '') + '@c.us'
-    return clienteWA.sendText(id, mensaje)
+    const jid = numero.replace(/\D/g, '') + '@s.whatsapp.net'
+    await sock.sendMessage(jid, { text: mensaje })
 }
 
 function desconectar() {
-    if (clienteWA) { clienteWA.kill(); clienteWA = null }
+    sock?.end()
+    sock = null
     estadoConexion = 'desconectado'
-    qrActual = null
-    emitirSSE('estado', { estado: 'desconectado', qr: null })
+    emitirSSE('estado', { estado: 'desconectado' })
 }
 
-module.exports = {
-    iniciarWhatsapp, obtenerEstado, enviarMensaje,
-    desconectar, registrarSSE, desregistrarSSE,
-}
+module.exports = { iniciarWhatsapp, obtenerEstado, enviarMensaje, desregistrarSSE, registrarSSE, desconectar }

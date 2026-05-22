@@ -39,8 +39,8 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
     }
 
     return (
-        <div className="ped-tabla-wrap">
-            <table className="ped-tabla">
+        <div className="data-table-wrap ped-tabla-wrap">
+            <table className="data-table ped-tabla">
                 <thead>
                     <tr>
                         <th>Pedido</th>
@@ -66,7 +66,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                 <td data-label="Cliente">
                                     {editando ? (
                                         <select
-                                            className="ped-tabla-input"
+                                            className="table-input ped-tabla-input"
                                             value={draft.clienteId}
                                             onChange={e => setDraft(d => ({ ...d, clienteId: e.target.value }))}
                                             onKeyDown={e => handleDraftKey(e, pedido.id)}
@@ -83,7 +83,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                 <td data-label="Estado">
                                     {editando ? (
                                         <select
-                                            className="ped-tabla-input"
+                                            className="table-input ped-tabla-input"
                                             value={draft.estado}
                                             onChange={e => setDraft(d => ({ ...d, estado: e.target.value }))}
                                             onKeyDown={e => handleDraftKey(e, pedido.id)}
@@ -93,7 +93,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                             ))}
                                         </select>
                                     ) : (
-                                        <span className={`estado-chip ${chipClass(pedido.estado)}`}>
+                                        <span className={`pedido-estado-chip ${chipClass(pedido.estado)}`}>
                                             {pedido.estado || 'pendiente'}
                                         </span>
                                     )}
@@ -101,7 +101,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                 <td data-label="Fecha">
                                     {editando ? (
                                         <input
-                                            className="ped-tabla-input"
+                                            className="table-input ped-tabla-input"
                                             type="date"
                                             value={draft.fecha}
                                             onChange={e => setDraft(d => ({ ...d, fecha: e.target.value }))}
@@ -112,7 +112,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                 <td data-label="Total">
                                     {editando ? (
                                         <input
-                                            className="ped-tabla-input ped-tabla-number"
+                                            className="table-input table-input-number ped-tabla-input ped-tabla-number"
                                             type="number"
                                             value={draft.total}
                                             onChange={e => setDraft(d => ({ ...d, total: e.target.value }))}
@@ -122,7 +122,7 @@ export default function TablaPedidos({ pedidos, clientes, onEliminar, onEditar }
                                         <span className="ped-tabla-total">${formatPrecio(pedido.total)}</span>
                                     )}
                                 </td>
-                                <td className="ped-tabla-actions">
+                                <td className="table-actions ped-tabla-actions">
                                     {editando ? (
                                         <>
                                             <button className="btn-icon btn-save" onClick={() => guardarEdicion(pedido.id)} title="Guardar">

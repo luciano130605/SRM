@@ -1,7 +1,5 @@
 import Comand from "../../icons/Comand"
 import X from "../../icons/X"
-import "./comandos.css"
-
 export default function Comandos({ abierto, setAbierto, comandos, inline = false }) {
     if (inline) {
         return (
@@ -52,3 +50,4 @@ export default function Comandos({ abierto, setAbierto, comandos, inline = false
         </>
     )
 }
+

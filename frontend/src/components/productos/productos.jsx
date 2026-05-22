@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import api from "../../../services/api"
-import "./productos.css"
 import calcularMargen from "./calcular-margen"
 import FormularioProducto from "./formulario-producto"
 import obtenerNombreCategoria from './obtener-nombre-categoria'
@@ -18,7 +17,7 @@ import { exportarCsv, normalizarTexto, obtenerValorFila, parsearNumero, parsearT
 
 const CATEGORIAS_DEFAULT = []
 
-function Productos() {
+function Productos({ datosIniciales }) {
     const [productos, setProductos] = useState([])
     const [creando, setCreando] = useState(false)
     const [categorias, setCategorias] = useState(CATEGORIAS_DEFAULT)
@@ -334,21 +333,18 @@ function Productos() {
     const totalFiltrados = productosProcesados.length
 
     return (
-        <div className="contenedor-productos">
-            <header className="contenedor-header">
+        <div className="page-container contenedor-productos">
+            <header className="page-header contenedor-header">
                 <div>
-                    <p className="productos-label">Sistema de gestión</p>
-                    <h1 className="productos-title"><em>Productos</em></h1>
-                    <p>Mejoras <br />
-                        toast <br />
-                    </p>
+                    <p className="page-label productos-label">Sistema de gestión</p>
+                    <h1 className="page-title productos-title"><em>Productos</em></h1>
                 </div>
-                <span className="productos-header-count">
+                <span className="page-count productos-header-count">
                     {productos.length} {productos.length === 1 ? 'producto' : 'productos'}
                 </span>
             </header>
 
-            <div className="toolbar">
+            <div className="page-toolbar toolbar">
                 <Comandos
                     abierto={comandosAbiertos}
                     setAbierto={setComandosAbiertos}
@@ -373,8 +369,9 @@ function Productos() {
 
             </div>
 
-            <div className="contenedor-form">
+            <div className="page-layout contenedor-form">
                 <FormularioProducto
+                    datosIniciales={datosIniciales}
                     onCrear={crearProducto}
                     creando={creando}
                     categorias={categorias}
@@ -385,23 +382,23 @@ function Productos() {
                 />
 
                 <section>
-                    <h2 className="form-list-header">
+                    <h2 className="section-heading form-list-header">
                         Catálogo
                         {productos.length > 0 && (
-                            <span className="cant-productos">
+                            <span className="count-badge cant-productos">
                                 {hayFiltros ? `${totalFiltrados} / ${productos.length}` : productos.length}
                             </span>
                         )}
                     </h2>
 
                     <div className="catalogo-actions">
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                        <div className="action-row">
                             <LimpiarTodo
                                 onLimpiar={limpiarProductos}
                                 disabled={productos.length === 0}
                                 titulo="Eliminar todos los productos"
                             />
-                            <div style={{ display: "grid", gridAutoFlow: "column", gap: "1rem"}}>
+                            <div className="action-group">
                                 <ImportExport
                                     onExportar={exportarProductosSheet}
                                     onImportar={importarProductosSheet}
@@ -415,8 +412,6 @@ function Productos() {
                                 <VistaSwitch vista={vista} setVista={setVista} />
                             </div>
                         </div>
-
-
                     </div>
 
                     {resultadoImportacion && (
@@ -447,3 +442,4 @@ function Productos() {
 }
 
 export default Productos
+
