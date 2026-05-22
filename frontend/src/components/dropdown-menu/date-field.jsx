@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import ArrowLeft from "../icons/ArrowLeft"
-import ArrowRight from "../icons/ArrowRight"
+import ArrowLeft from "../../icons/ArrowLeft"
+import ArrowRight from "../../icons/ArrowRight"
 
 const MONTHS = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",

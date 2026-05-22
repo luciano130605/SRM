@@ -3,7 +3,7 @@ import GestorCategorias from './gestor-categorias'
 import Formulario from "../formulario/formulario"
 import CalculadoraCosto from "./calculadora-costo"
 import SugerenciaIA from "../ia/sugerencia-ia"
-import DropdownMenu from "../../dropdown-menu/dropdown-menu"
+import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 export default function FormularioProducto({ datosIniciales, onCrear, creando, categorias, setCategorias, productosPorCategoria, nombreInputRef, onError }) {
     const [nombre, setNombre] = useState('')

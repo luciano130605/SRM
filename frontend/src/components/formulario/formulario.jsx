@@ -1,5 +1,5 @@
-import SelectDropdown from "../../dropdown-menu/select-dropdown"
-import DateField from "../../dropdown-menu/date-field"
+import SelectDropdown from "../dropdown-menu/select-dropdown"
+import DateField from "../dropdown-menu/date-field"
 export default function Formulario({
     titulo,
     campos,

@@ -3,7 +3,7 @@ import Formulario from "../formulario/formulario"
 import { ESTADOS_PEDIDO } from "./estados-pedido"
 import formatPrecio from "./format-precio"
 import X from "../../icons/X"
-import DropdownMenu from "../../dropdown-menu/dropdown-menu"
+import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 
 export default function FormularioPedido({ datosIniciales, onCrear, creando, clientes, productos }) {

@@ -13,7 +13,7 @@ import ToastDeshacer from "../toast-deshacer/toast-deshacer"
 import Toast from "../toast/toast"
 import useEliminacionDeshacer from "../../hooks/use-eliminacion-deshacer"
 import { exportarCsv, normalizarTexto, obtenerValorFila, parsearTablaCsv } from "../../utils/csv"
-import DropdownMenu from '../../dropdown-menu/dropdown-menu'
+import DropdownMenu from '../dropdown-menu/dropdown-menu'
 
 const POR_PAGINA = 10
 

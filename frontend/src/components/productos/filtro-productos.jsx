@@ -1,5 +1,5 @@
 import { useState } from "react"
-import DropdownMenu from "../../dropdown-menu/dropdown-menu"
+import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 export default function FiltrosProductos({
     categorias,

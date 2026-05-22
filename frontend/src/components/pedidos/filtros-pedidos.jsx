@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { ESTADOS_PEDIDO, estadoLabel } from "./estados-pedido"
-import DropdownMenu from "../../dropdown-menu/dropdown-menu"
+import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 export default function FiltrosPedidos({
     filtroEstado,

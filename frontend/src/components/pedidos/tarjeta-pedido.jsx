@@ -12,7 +12,7 @@ import ExternalLinkIcon from "../../icons/ExternalLink"
 import Copy from "../../icons/Copy"
 import CopySuccess from "../../icons/CopySuccess"
 import ModalNotificacionPedido from "./modal-notificacion-pedido"
-import DropdownMenu from "../../dropdown-menu/dropdown-menu"
+import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 export default function TarjetaPedido({
     pedido,
