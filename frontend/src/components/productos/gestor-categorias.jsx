@@ -219,6 +219,7 @@ export default function GestorCategorias({
                                 e.key === 'Enter' && agregarCategoria()
                             }
                         />
+                        No guarda el reordamiento en la bd
 
                         <button
                             className="btn-cat-add"

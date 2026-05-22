@@ -9,7 +9,6 @@ const SlidersHorizontalIcon = forwardRef(
         const [scope, animate] = useAnimate();
 
         const start = useCallback(() => {
-            // Row 1
             animate(
                 ".slider-1",
                 { x: [0, -4, 0] },
@@ -28,7 +27,6 @@ const SlidersHorizontalIcon = forwardRef(
                 { duration: 2, repeat: Infinity, ease: "easeInOut" },
             );
 
-            // Row 2
             animate(
                 ".slider-2",
                 { x: [0, 4, 0] },
@@ -62,7 +60,6 @@ const SlidersHorizontalIcon = forwardRef(
                 },
             );
 
-            // Row 3
             animate(
                 ".slider-3",
                 { x: [0, -4, 0] },
@@ -135,7 +132,6 @@ const SlidersHorizontalIcon = forwardRef(
                 strokeLinejoin="round"
                 className={`cursor-pointer ${className}`}
             >
-                {/* Row 1 */}
                 <motion.line
                     className="path-1-left"
                     x1="3"
@@ -160,7 +156,6 @@ const SlidersHorizontalIcon = forwardRef(
                     y2="5"
                 />
 
-                {/* Row 2 */}
                 <motion.line
                     className="path-2-left"
                     x1="3"
@@ -185,7 +180,6 @@ const SlidersHorizontalIcon = forwardRef(
                     y2="12"
                 />
 
-                {/* Row 3 */}
                 <motion.line
                     className="path-3-left"
                     x1="3"

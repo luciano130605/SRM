@@ -611,7 +611,6 @@
     }
 }
 
-/* ── Bot animado ── */
 
 @keyframes antenaFlotando {
 
@@ -686,7 +685,6 @@
     }
 }
 
-/* Idle: todo quieto */
 .bot-antena,
 .bot-oreja--izq,
 .bot-oreja--der,
@@ -701,7 +699,6 @@
     transform: scaleY(0);
 }
 
-/* Bot esperando respuesta — todo lento y suave */
 .chat-avatar--typing .bot-antena {
     transform-box: fill-box;
     transform-origin: bottom center;
@@ -714,7 +711,6 @@
     animation: orejaIzqFlotando 4s ease-in-out infinite;
 }
 
-/* Oreja derecha */
 .chat-avatar--typing .bot-oreja--der {
     transform-box: fill-box;
     transform-origin: left center;
@@ -781,9 +777,6 @@
     }
 }
 
-/* =========================
-   TABLETS
-========================= */
 @media (max-width: 900px) {
     .side-panel {
         top: 70px;
@@ -799,9 +792,6 @@
     }
 }
 
-/* =========================
-   MÓVILES
-========================= */
 @media (max-width: 640px) {
 
     .side-panel {
@@ -872,7 +862,6 @@
     .side-panel-chat-form input {
         min-width: 0;
         font-size: 16px;
-        /* evita zoom en iPhone */
     }
 
     .side-panel-send {
@@ -885,9 +874,7 @@
     }
 }
 
-/* =========================
-   MÓVILES MUY CHICOS
-========================= */
+
 @media (max-width: 420px) {
 
     .side-panel {

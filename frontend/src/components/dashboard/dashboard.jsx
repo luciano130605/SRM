@@ -12,6 +12,7 @@ const comandosDashboard = [
     { teclas: 'Alt + C', accion: 'Crear nuevo cliente' },
     { teclas: 'Alt + P', accion: 'Crear nuevo producto' },
     { teclas: 'Alt + N', accion: 'Crear nuevo pedido' },
+    {teclas: 'Ctrl + K', accion: 'Abrir chat IA'}
 ]
 
 function obtenerSaludo() {
@@ -61,16 +62,18 @@ export default function Dashboard({ usuario, onIrA = () => { } }) {
     const [productos, setProductos] = useState([])
     const [cargando, setCargando] = useState(true)
     const [toast, setToast] = useState(null)
-
+    const [estados, setEstados] = useState([])
     useEffect(() => {
         Promise.all([
             api.get('/pedidos'),
             api.get('/clientes'),
             api.get('/productos'),
+            api.get('/estados-pedido'),
         ]).then(([rPed, rCli, rProd]) => {
             setPedidos(rPed.data.data || rPed.data || [])
             setClientes(rCli.data.data || rCli.data || [])
             setProductos(rProd.data.data || rProd.data || [])
+            setEstados(rEst.data.data || rEst.data || [])
         }).catch(() => {
             setToast({ mensaje: 'No se pudo cargar el dashboard.', tipo: 'error' })
             window.setTimeout(() => setToast(null), 3500)
@@ -138,7 +141,7 @@ export default function Dashboard({ usuario, onIrA = () => { } }) {
             </div>
 
             <div className="dash-grid">
-                <PedidosRecientes pedidos={pedidos} clientes={clientes} />
+                <PedidosRecientes pedidos={pedidos} clientes={clientes} estados={estados} />
                 <ClientesActivos clientes={clientes} pedidos={pedidos} />
             </div>
 

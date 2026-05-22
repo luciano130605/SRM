@@ -271,7 +271,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\auth\auth.css */
 .auth-screen {
     min-height: 100vh;
     display: grid;
@@ -591,7 +590,6 @@ body {
     color: #1e6f38;
 }
 
-/* .\frontend\src\components\buscador\buscador.css */
 .buscador {
     position: relative;
     flex: 1;
@@ -621,14 +619,9 @@ body {
 
 .buscador input:hover {
     border-color: var(--borderHover);
-    background: var(--white);
 }
 
-.buscador input:focus {
-    border-color: var(--pink-light);
-    background: var(--white);
-    box-shadow: 0 0 0 3px rgba(255, 78, 117, 0.1);
-}
+
 
 .buscador:focus-within .buscador-icon {
     color: var(--pink-light);
@@ -652,7 +645,6 @@ body {
     transition: color 0.2s;
 }
 
-/* .\frontend\src\components\clientes\clientes.css */
 .cli-search-wrap {
     position: relative;
     flex: 1;
@@ -1130,7 +1122,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\comandos\comandos.css */
 .command-switch {
     display: inline-flex;
     padding: 3px;
@@ -1233,7 +1224,6 @@ body {
     color: var(--pink);
 }
 
-/* .\frontend\src\components\dashboard\dashboard.css */
 .dash-contenedor {
     max-width: 1180px;
     margin: 0 auto;
@@ -2053,7 +2043,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\formulario\formulario.css */
 .required::after {
     content: '*';
     color: var(--pink);
@@ -2103,7 +2092,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\header\header.css */
 .app-header {
     position: sticky;
     top: 0;
@@ -2360,7 +2348,7 @@ body {
 
 .header-settings-panel {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     border-bottom: 1px solid var(--border);
 }
 
@@ -2453,7 +2441,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\ia\sugerencia-ia.css */
 .ia-sugerencia-trigger {
     display: inline-flex;
     align-items: center;
@@ -2562,7 +2549,6 @@ body {
     }
 }
 
-/* .\frontend\src\components\import-export\import-export.css */
 .sheet-switch {
     display: inline-flex;
     padding: 3px;
@@ -2606,7 +2592,6 @@ body {
     color: var(--pink);
 }
 
-/* .\frontend\src\components\limpiar-todo\limpiar-todo.css */
 .danger-switch {
     display: inline-flex;
     padding: 3px;
@@ -2635,7 +2620,6 @@ body {
     transition: background 0.2s, color 0.2s;
 }
 
-/* .\frontend\src\components\paginacion\paginacion.css */
 .paginacion {
     display: flex;
     align-items: center;
@@ -2653,7 +2637,6 @@ body {
     padding: 0 0.5rem;
 }
 
-/* .\frontend\src\components\pedidos\pedidos.css */
 .ped-search-wrap {
     position: relative;
     flex: 1;
@@ -2682,14 +2665,11 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Layout */
-/* Panel */
 .ped-form-panel {
     position: sticky;
     top: 2rem;
 }
 
-/* Items del pedido */
 .ped-items-section {
     margin-bottom: 1rem;
 }
@@ -2757,8 +2737,6 @@ body {
     color: var(--pink);
 }
 
-/* Lista */
-/* Cards */
 .ped-grid {
     display: flex;
     flex-direction: column;
@@ -2908,7 +2886,6 @@ body {
     transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-/* Edicion */
 .ped-edit-grid {
     margin-top: 0.75rem;
     display: grid;
@@ -2916,7 +2893,6 @@ body {
     gap: 0.4rem;
 }
 
-/* Botones */
 .btn-icon {
     width: 26px;
     height: 26px;
@@ -3010,7 +2986,6 @@ body {
     margin: 0;
 }
 
-/* Modal notificacion pedido */
 .notif-subtitulo {
     font-size: 0.875rem;
     color: var(--color-muted, #666);
@@ -3019,13 +2994,13 @@ body {
 
 .notif-textarea {
     width: 100%;
-    border: 1px solid var(--color-border, #ddd);
+    border: 1px solid var(--border);
     border-radius: 0.5rem;
     padding: 0.75rem;
     font-size: 0.9rem;
     resize: vertical;
     font-family: inherit;
-    background: var(--color-bg, #fafafa);
+    background: var(--white);
 }
 
 .notif-acciones {
@@ -3168,7 +3143,6 @@ body {
     margin: 0;
 }
 
-/* .\frontend\src\components\productos\productos.css */
 .required::after {
     content: '*';
     color: var(--pink);
@@ -3803,7 +3777,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 
-/* modal calculadora-costo */
 .cc-trigger {
     display: inline-flex;
     align-items: center;
@@ -4125,7 +4098,6 @@ input[type="number"]::-webkit-inner-spin-button {
     margin: 0;
 }
 
-/* .\frontend\src\components\tarjeta\tarjeta.css */
 .btn-cancel-card {
     width: 26px;
     height: 26px;
@@ -4140,7 +4112,6 @@ input[type="number"]::-webkit-inner-spin-button {
     transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-/* .\frontend\src\components\toast\toast.css */
 .app-toast {
     position: fixed;
     right: 1.5rem;
@@ -4159,7 +4130,6 @@ input[type="number"]::-webkit-inner-spin-button {
     font-size: 12px;
 }
 
-/* .\frontend\src\components\toast-deshacer\toast-deshacer.css */
 .undo-toast {
     position: fixed;
     right: 1.5rem;
@@ -4178,7 +4148,6 @@ input[type="number"]::-webkit-inner-spin-button {
     font-size: 12px;
 }
 
-/* .\frontend\src\components\vista-switch\vista-switch.css */
 .vista-switch {
     display: inline-flex;
     padding: 3px;
@@ -4191,7 +4160,6 @@ input[type="number"]::-webkit-inner-spin-button {
     background: rgb(255, 78, 117, 0.5) !important;
 }
 
-/* Responsive icon labels */
 .app-nav-btn,
 .app-user-dropdown-btn,
 .vista-switch button,
@@ -4399,6 +4367,10 @@ input[type="number"]::-webkit-inner-spin-button {
         transform-origin: center;
     }
 
+    .comandosBtn {
+        display: none;
+    }
+
 }
 
 .buscador-mobile {
@@ -4426,20 +4398,6 @@ input[type="number"]::-webkit-inner-spin-button {
         gap: .5rem;
     }
 
-    .buscador-mobile-input {
-        padding: 0.5rem 0.6rem;
-        background: var(--white-grey);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 12px;
-        color: var(--black);
-        outline: none;
-        width: 100%;
-        -webkit-appearance: none;
-        appearance: none;
-        transition: border-color 0.2s;
-    }
 
 
 
@@ -4481,13 +4439,12 @@ input[type="number"]::-webkit-inner-spin-button {
     }
 
     .buscador-mobile-control input {
-        min-height: 44px;
         padding-right: 2.7rem;
     }
 
     .buscador-mobile-control input:focus {
         border: 1px solid var(--border) !important;
-        box-shadow: none;
+        box-shadow: none !important;
         background: var(--white-grey);
     }
 
@@ -4513,6 +4470,53 @@ input[type="number"]::-webkit-inner-spin-button {
         width: 390% !important;
     }
 
+
+    .buscador-mobile-inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .buscador-icon-btn {
+        background: var(--white-grey);
+        border: 1px solid var(--border);
+        padding: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        color: var(--black);
+    }
+
+    .buscador-mobile-input {
+        width: 0;
+        opacity: 0;
+        padding: 0;
+        border: none;
+        outline: none;
+        transition: all 0.25s ease;
+    }
+
+    .buscador-mobile-input.open {
+        width: 160px;
+        opacity: 1;
+        padding: 6px 10px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+    }
+
+}
+
+.buscador-mobile-inline {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .buscador-mobile-inline {
+        display: flex;
+    }
+
+    .buscador-desktop-control {
+        display: none;
+    }
 }
 
 
@@ -4663,4 +4667,44 @@ input[type="number"]::-webkit-inner-spin-button {
 .cc-fab-scan-text {
     font-size: 0.85rem;
     font-weight: 600;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.form-minimize-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    .form-panel {
+        transition: all 0.25s ease;
+    }
+
+    .form-panel.min {
+        height: 60px;
+        overflow: hidden;
+        padding: 0.8rem;
+    }
+
+    .form-panel.min form {
+        display: none;
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .form-minimize-btn {
+        border: none;
+        display: flex;
+        background: transparent;
+        font-size: 18px;
+        color: var(--black);
+        cursor: pointer;
+    }
 }

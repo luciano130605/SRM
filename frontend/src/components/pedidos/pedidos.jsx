@@ -44,6 +44,7 @@ export default function Pedidos({ datosIniciales }) {
     const buscadorRef = useRef(null)
     const inputImportRef = useRef(null)
     const [waAbierto, setWaAbierto] = useState(false)
+    const [estados, setEstados] = useState([])
 
     const {
         toastDeshacer,
@@ -72,6 +73,7 @@ export default function Pedidos({ datosIniciales }) {
                 const cliente = clienteMap[String(pedido.clienteId)] || {}
 
                 return (cliente.nombre || '').toLowerCase().includes(q) ||
+                    String(pedido.nro).includes(q) ||
                     String(pedido.id).includes(q) ||
                     (pedido.notas || '').toLowerCase().includes(q)
             })
@@ -111,12 +113,13 @@ export default function Pedidos({ datosIniciales }) {
 
     async function obtener() {
         try {
-            const [rPed, rCli, rProd] = await Promise.all([
+            const [rPed, rCli, rProd, rEst] = await Promise.all([
                 api.get('/pedidos'),
                 api.get('/clientes'),
                 api.get('/productos'),
+                api.get('/estados-pedido'),
             ])
-
+            setEstados(rEst.data?.data ?? [])
             setPedidos(rPed.data?.data ?? rPed.data ?? [])
             setClientes(rCli.data?.data ?? rCli.data ?? [])
             setProductos(rProd.data?.data ?? rProd.data ?? [])
@@ -192,6 +195,7 @@ export default function Pedidos({ datosIniciales }) {
                 .join(', ')
 
             return [
+                pedido.nro || '',
                 pedido.id,
                 cliente.nombre || '',
                 pedido.clienteId || '',
@@ -203,7 +207,7 @@ export default function Pedidos({ datosIniciales }) {
             ]
         })
 
-        const encabezados = ['ID', 'Cliente', 'Cliente ID', 'Estado', 'Fecha', 'Total', 'Notas', 'Productos']
+        const encabezados = ['Nro', 'ID', 'Cliente', 'Cliente ID', 'Estado', 'Fecha', 'Total', 'Notas', 'Productos']
 
         exportarCsv({
             nombreArchivo: `pedidos-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -348,12 +352,13 @@ export default function Pedidos({ datosIniciales }) {
             </header>
 
             <div className="page-toolbar ped-toolbar">
-                <Comandos
-                    abierto={comandosAbiertos}
-                    setAbierto={setComandosAbiertos}
-                    comandos={comandosPedidos}
-                />
-
+                <div className="comandosBtn">
+                    <Comandos
+                        abierto={comandosAbiertos}
+                        setAbierto={setComandosAbiertos}
+                        comandos={comandosPedidos}
+                    />
+                </div>
                 <Buscador
                     inputRef={buscadorRef}
                     value={busqueda}
@@ -376,6 +381,8 @@ export default function Pedidos({ datosIniciales }) {
                 <FormularioPedido
                     onCrear={crearPedido}
                     creando={creando}
+                    estados={estados}
+                    setEstados={setEstados}
                     clientes={clientes}
                     productos={productos}
                     datosIniciales={datosIniciales}
@@ -430,6 +437,7 @@ export default function Pedidos({ datosIniciales }) {
                                 vista={vista}
                                 onEliminar={eliminarPedido}
                                 onEditar={editarPedido}
+                                estados={estados}
                                 onCambiarEstado={cambiarEstado}
                             />
                             <Paginacion

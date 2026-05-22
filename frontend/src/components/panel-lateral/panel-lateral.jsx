@@ -10,7 +10,6 @@ import BotAnimado from "../../icons/BotAnimado"
 import RefreshIcon from "../../icons/RefreshMovimiento"
 import ACCIONES from "./acciones"
 import PASOS from "./pasos"
-import ESTADOS_PEDIDO from "./estados-pedido"
 import MENSAJE_INICIAL from "./mensaje-inicial"
 import TEXTO_COMANDOS from "./texto-comandos"
 import nuevoId from "./nuevo-id"
@@ -38,7 +37,7 @@ export default function PanelLateral({ onIrA, onCreado }) {
     const [mostrarComandos, setMostrarComandos] = useState(false)
     const sendIconRef = useRef(null)
     const [datosInicialesFormulario, setDatosInicialesFormulario] = useState(null)
-
+    const [estadosPedido, setEstadosPedido] = useState([])
 
     const EJEMPLOS_COMANDOS = [
         "/ir productos",
@@ -56,6 +55,20 @@ export default function PanelLateral({ onIrA, onCreado }) {
 
     const [cmdEjemplo, setCmdEjemplo] = useState(0)
     const [cmdVisible, setCmdVisible] = useState(true)
+
+    useEffect(() => {
+        function handleKeyDown(e) {
+            const esCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"
+
+            if (esCtrlK) {
+                e.preventDefault()
+                setAbierto(prev => !prev)
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+    }, [])
 
     useEffect(() => {
         if (!entrada.startsWith("/")) return
@@ -83,11 +96,12 @@ export default function PanelLateral({ onIrA, onCreado }) {
         async function cargarDatos() {
             setCargandoDatos(true)
             try {
-                const [resCategorias, resClientes, resProductos, resMetodos] = await Promise.all([
+                const [resCategorias, resClientes, resProductos, resMetodos, resEstadosPedido] = await Promise.all([
                     api.get("/categorias"),
                     api.get("/clientes"),
                     api.get("/productos"),
                     api.get("/metodos-contacto"),
+                    api.get("/estados-pedido"),
                 ])
 
                 if (cancelado) return
@@ -95,6 +109,7 @@ export default function PanelLateral({ onIrA, onCreado }) {
                 setClientes(resClientes.data?.data ?? resClientes.data ?? [])
                 setProductos(resProductos.data?.data ?? resProductos.data ?? [])
                 setMetodos(resMetodos.data?.data ?? resMetodos.data ?? [])
+                setEstadosPedido(resEstados.data?.data ?? [])
             } catch {
                 agregarBot("No pude cargar los datos existentes. Podes seguir, pero algunos selectores pueden aparecer vacios.")
             } finally {
@@ -1005,16 +1020,10 @@ export default function PanelLateral({ onIrA, onCreado }) {
                 </button>
             ))
         }
-
         if (flujo.tipo === "pedidos" && pasoActual === "estado") {
-            return ESTADOS_PEDIDO.map(estado => (
-                <button
-                    className="chat-chip"
-                    type="button"
-                    key={estado}
-                    onClick={() => responderPaso(estado)}
-                >
-                    {estado}
+            return estadosPedido.map(e => (
+                <button className="chat-chip" type="button" key={e.id} onClick={() => responderPaso(e.nombre)}>
+                    {e.nombre}
                 </button>
             ))
         }

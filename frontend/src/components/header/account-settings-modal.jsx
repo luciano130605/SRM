@@ -3,9 +3,11 @@ import api from "../../../services/api"
 import X from "../../icons/X"
 import GestorCategorias from "../productos/gestor-categorias"
 import GestorMetodosContacto from "../clientes/gestor-metodos"
+import GestorEstadosPedido from "../pedidos/gestor-estados-pedidos"
 
-export default function AccountSettingsModal({ abierto, onCerrar, usuario, onUpdateUsuario }) {
+export default function AccountSettingsModal({ abierto, onCerrar, onError, usuario, onUpdateUsuario }) {
     const [categorias, setCategorias] = useState([])
+    const [estados, setEstados] = useState([])
     const [metodos, setMetodos] = useState([])
     const [nombre, setNombre] = useState(usuario?.nombre || '')
     const [cargando, setCargando] = useState(false)
@@ -19,12 +21,14 @@ export default function AccountSettingsModal({ abierto, onCerrar, usuario, onUpd
 
         Promise.all([
             api.get('/categorias'),
-            api.get('/metodos-contacto')
+            api.get('/metodos-contacto'),
+            api.get('/estados-pedido')
         ])
-            .then(([catRes, metRes]) => {
+            .then(([catRes, metRes, estRes]) => {
                 setCategorias(catRes.data.data || catRes.data || [])
                 setMetodos(metRes.data.data || metRes.data || [])
                 setNombre(usuario?.nombre || '')
+                setEstados(estRes.data.data || estRes.data || [])
             })
             .catch(() => {
                 setError('No se pudieron cargar las preferencias. Intenta de nuevo.')
@@ -117,6 +121,19 @@ export default function AccountSettingsModal({ abierto, onCerrar, usuario, onUpd
                                 metodos={metodos}
                                 setMetodos={setMetodos}
                                 onError={setError}
+                            />
+                        )}
+
+                    </div>
+                    <div className="header-settings-section">
+                        <h3>Estado de los pedidos</h3>
+                        {cargando ? (
+                            <p>Cargando estados…</p>
+                        ) : (
+                            <GestorEstadosPedido
+                                estados={estados}
+                                setEstados={setEstados}
+                                onError={onError}
                             />
                         )}
                     </div>

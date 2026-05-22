@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth.routes')
 const iaRoutes = require('./routes/ia.routes')
 const requiereAuth = require('./middlewares/auth.middleware')
 const whatsappRoutes = require('./routes/whatsapp.routes')
+const estadosPedidoRoutes = require('./routes/estados-pedido.routes')
 
 const app = express()
 
@@ -28,7 +29,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes)
 app.use('/whatsapp', whatsappRoutes)
 app.use(requiereAuth)
-
+app.use('/estados-pedido', estadosPedidoRoutes)
 app.use('/clientes', clientesRoutes)
 app.use('/productos', productosRoutes)
 app.use('/pedidos', pedidosRoutes)

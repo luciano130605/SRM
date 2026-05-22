@@ -9,6 +9,7 @@ export default function ListaPedidos({
     onEliminar,
     onEditar,
     onCambiarEstado,
+    estados = []
 }) {
     const [editandoId, setEditandoId] = useState(null)
 
@@ -30,6 +31,7 @@ export default function ListaPedidos({
                     key={pedido.id}
                     pedido={pedido}
                     clientes={clientes}
+                    estados={estados}
                     onEliminar={onEliminar}
                     onEditar={onEditar}
                     onCambiarEstado={onCambiarEstado}

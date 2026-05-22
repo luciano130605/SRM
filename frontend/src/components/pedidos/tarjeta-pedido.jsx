@@ -6,17 +6,18 @@ import Save from "../../icons/Save"
 import Telefono from "../../icons/Telefono"
 import X from "../../icons/X"
 import Tarjeta from "../tarjeta/tarjeta"
-import { ESTADOS_PEDIDO, chipClass, siguienteEstado } from "./estados-pedido"
 import formatPrecio from "./format-precio"
 import ExternalLinkIcon from "../../icons/ExternalLink"
 import Copy from "../../icons/Copy"
 import CopySuccess from "../../icons/CopySuccess"
 import ModalNotificacionPedido from "./modal-notificacion-pedido"
 import DropdownMenu from "../dropdown-menu/dropdown-menu"
+import { chipEstadoStyle } from "./estados-pedido"
 
 export default function TarjetaPedido({
     pedido,
     clientes,
+    estados = [],
     onEliminar,
     onEditar,
     onCambiarEstado,
@@ -30,24 +31,25 @@ export default function TarjetaPedido({
     const [selectorEstado, setSelectorEstado] = useState(false)
 
     const clienteMap = useMemo(() =>
-        Object.fromEntries(clientes.map(cliente => [String(cliente.id), cliente])), [clientes])
+        Object.fromEntries(clientes.map(c => [String(c.id), c])), [clientes])
 
     const clienteId = pedido.clienteId || pedido.idCliente
     const cliente = clienteMap[String(clienteId)] || {}
     const fecha = pedido.fecha || pedido.createdAt
         ? new Date(pedido.fecha || pedido.createdAt).toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
+            day: '2-digit', month: 'short', year: 'numeric',
         })
         : '-'
 
     const items = pedido.items || pedido.productos || []
 
+    const estadoActual = estados.find(e => e.nombre === pedido.estado)
+    const colorEstado = estadoActual?.color
+
     function iniciarEdicion() {
         setDraft({
             clienteId: clienteId || '',
-            estado: pedido.estado || 'pendiente',
+            estado: pedido.estado || '',
             total: pedido.total || '',
             notas: pedido.notas || '',
             fecha: pedido.fecha ? pedido.fecha.slice(0, 10) : '',
@@ -73,7 +75,6 @@ export default function TarjetaPedido({
 
     async function copiarTexto(texto, tipo) {
         if (!texto) return
-
         try {
             await navigator.clipboard.writeText(texto)
         } catch {
@@ -84,40 +85,27 @@ export default function TarjetaPedido({
             document.execCommand('copy')
             document.body.removeChild(input)
         }
-
         setCopiado(tipo)
         window.setTimeout(() => setCopiado(''), 1200)
     }
 
-    function normalizarTelefono(telefono) {
-        return String(telefono || '').replace(/\D/g, '')
-    }
-
+    function normalizarTelefono(t) { return String(t || '').replace(/\D/g, '') }
     function abrirWhatsapp() {
-        const telefono = normalizarTelefono(cliente.telefono)
-        if (!telefono) return
-        window.open(`https://wa.me/${telefono}`, '_blank', 'noopener,noreferrer')
+        const t = normalizarTelefono(cliente.telefono)
+        if (t) window.open(`https://wa.me/${t}`, '_blank', 'noopener,noreferrer')
     }
-
-    function normalizarInstagram(instagram) {
-        return String(instagram || '').trim().replace(/^@/, '')
-    }
-
     function abrirInstagram() {
-        const usuario = normalizarInstagram(cliente.instagram)
-        if (!usuario) return
-        window.open(`https://www.instagram.com/${usuario}`, '_blank', 'noopener,noreferrer')
+        const u = String(cliente.instagram || '').trim().replace(/^@/, '')
+        if (u) window.open(`https://www.instagram.com/${u}`, '_blank', 'noopener,noreferrer')
     }
-
     function abrirMaps() {
         if (!cliente.direccion) return
-        const query = encodeURIComponent(cliente.direccion)
-        window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank', 'noopener,noreferrer')
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cliente.direccion)}`, '_blank', 'noopener,noreferrer')
     }
 
     const header = (
         <>
-            <p className="ped-card-id">Pedido #{pedido.id}</p>
+            <p className="ped-card-id">Pedido #{pedido.nro ?? pedido.id}</p>
             {!editando && <p className="ped-card-cliente">{cliente.nombre || `Cliente #${clienteId}`}</p>}
             {!editando && <p className="ped-card-fecha">{fecha}</p>}
         </>
@@ -141,23 +129,21 @@ export default function TarjetaPedido({
             {!editando && (
                 <div className="pedido-estado-wrapper">
                     <span
-                        className={`pedido-estado-chip ${chipClass(pedido.estado)}`}
+                        className="pedido-estado-chip pointer"
                         onClick={() => setSelectorEstado(v => !v)}
                         style={{ cursor: 'pointer' }}
+                        style={chipEstadoStyle(colorEstado)}
                     >
                         {pedido.estado}
                     </span>
 
                     <DropdownMenu
-                    className="drop-pedido"
+                        className="drop-pedido"
                         abierto={selectorEstado}
                         onCerrar={() => setSelectorEstado(false)}
-                        opciones={ESTADOS_PEDIDO
-                            .filter(e => e !== pedido.estado)
-                            .map(e => ({
-                                value: e,
-                                label: e,
-                            }))
+                        opciones={estados
+                            .filter(e => e.nombre !== pedido.estado)
+                            .map(e => ({ value: e.nombre, label: e.nombre }))
                         }
                         onSeleccionar={({ value }) => {
                             onCambiarEstado(pedido.id, value)
@@ -166,7 +152,8 @@ export default function TarjetaPedido({
                         }}
                     />
                 </div>
-            )}
+            )
+            }
             <div className="ped-card-actions">{botones}</div>
         </>
     )
@@ -181,8 +168,8 @@ export default function TarjetaPedido({
                     onChange={e => setDraft(d => ({ ...d, clienteId: e.target.value }))}
                 >
                     <option value="">Sin cliente</option>
-                    {clientes.map(cliente => (
-                        <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
+                    {clientes.map(c => (
+                        <option key={c.id} value={c.id}>{c.nombre}</option>
                     ))}
                 </select>
             </div>
@@ -193,8 +180,8 @@ export default function TarjetaPedido({
                     value={draft.estado}
                     onChange={e => setDraft(d => ({ ...d, estado: e.target.value }))}
                 >
-                    {ESTADOS_PEDIDO.map(estado => (
-                        <option key={estado} value={estado}>{estado}</option>
+                    {estados.map(e => (
+                        <option key={e.id} value={e.nombre}>{e.nombre}</option>
                     ))}
                 </select>
             </div>
@@ -256,7 +243,6 @@ export default function TarjetaPedido({
                             </span>
                         </div>
                     )}
-
                     {cliente.instagram && (
                         <div className="ped-contacto-row">
                             <span className="ped-contacto-main" title={cliente.instagram}>
@@ -269,7 +255,6 @@ export default function TarjetaPedido({
                             </span>
                         </div>
                     )}
-
                     {cliente.direccion && (
                         <div className="ped-contacto-row">
                             <span className="ped-contacto-main" title={cliente.direccion}>
@@ -304,7 +289,6 @@ export default function TarjetaPedido({
                     onCerrar={() => setModalNotif(null)}
                 />
             )}
-
 
             {pedido.notas && <p className="ped-card-notas">"{pedido.notas}"</p>}
         </Tarjeta>

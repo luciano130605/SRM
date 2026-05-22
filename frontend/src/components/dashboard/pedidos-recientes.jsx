@@ -1,17 +1,20 @@
-
 import { useMemo } from "react"
-import chipEstado from "./chip-estado"
 import formatPrecio from "./format-precio"
 import iniciales from "./iniciales"
+import { chipEstadoStyle } from "../pedidos/estados-pedido"
 
-export default function PedidosRecientes({ pedidos, clientes }) {
+export default function PedidosRecientes({ pedidos, clientes, estados = [] }) {
     const clienteMap = useMemo(() =>
         Object.fromEntries(clientes.map(c => [c.id, c])), [clientes])
+
+    const estadoMap = useMemo(() =>
+        Object.fromEntries(estados.map(e => [e.nombre, e])), [estados])
 
     const recientes = [...pedidos]
         .sort((a, b) => new Date(b.fecha || b.createdAt) - new Date(a.fecha || a.createdAt))
         .slice(0, 7)
-
+    const estadoActual = estados.find(e => e.nombre === pedido.estado)
+    const colorEstado = estadoActual?.color
     return (
         <div className="dash-panel">
             <div className="panel-head">
@@ -26,6 +29,8 @@ export default function PedidosRecientes({ pedidos, clientes }) {
                     const fecha = p.fecha || p.createdAt
                         ? new Date(p.fecha || p.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
                         : '—'
+                    const color = estadoMap[p.estado]?.color
+
                     return (
                         <div key={p.id} className="pedido-row">
                             <div className="pedido-avatar">{iniciales(cliente.nombre || '?')}</div>
@@ -35,7 +40,13 @@ export default function PedidosRecientes({ pedidos, clientes }) {
                             </div>
                             <div className="pedido-row-right">
                                 <p className="pedido-row-monto">${formatPrecio(p.total)}</p>
-                                <span className={`pedido-estado-chip ${chipEstado(p.estado)}`}>{p.estado || 'pendiente'}</span>
+                                <span
+                                    className="pedido-estado-chip"
+                                    style={chipEstadoStyle(colorEstado)}
+
+                                >
+                                    {p.estado || 'pendiente'}
+                                </span>
                             </div>
                         </div>
                     )

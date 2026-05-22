@@ -331,11 +331,13 @@ function Clientes({ datosIniciales }) {
             </header>
 
             <div className="page-toolbar cli-toolbar">
-                <Comandos
-                    abierto={comandosAbiertos}
-                    setAbierto={setComandosAbiertos}
-                    comandos={comandosClientes}
-                />
+                <div className="comandosBtn">
+                    <Comandos
+                        abierto={comandosAbiertos}
+                        setAbierto={setComandosAbiertos}
+                        comandos={comandosClientes}
+                    />
+                </div>
 
                 <Buscador
                     inputRef={buscadorRef}

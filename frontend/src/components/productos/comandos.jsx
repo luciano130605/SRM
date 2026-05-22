@@ -8,6 +8,7 @@ const comandos = [
     { teclas: 'Ctrl + I', accion: 'Importar sheet' },
     { teclas: 'Ctrl + Z', accion: 'Deshacer eliminacion' },
     { teclas: 'Ctrl + /', accion: 'Ver comandos' },
+    { teclas: 'Ctrl + K', accion: 'Abrir chat IA' },
     { teclas: 'Esc', accion: 'Cerrar ventanas' }
 ]
 

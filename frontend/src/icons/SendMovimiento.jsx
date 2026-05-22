@@ -1,4 +1,3 @@
-// SendIcon.jsx — agregar forwardRef para exponer start
 import { motion, useAnimate } from "motion/react"
 import { forwardRef, useImperativeHandle } from "react"
 

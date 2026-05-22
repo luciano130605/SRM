@@ -76,7 +76,7 @@ export default function ModalNotificacionPedido({ pedido, cliente, nuevoEstado, 
     }
 
     async function copiar() {
-        try { await navigator.clipboard.writeText(mensaje) } catch { /* fallback ignorado */ }
+        try { await navigator.clipboard.writeText(mensaje) } catch { /* fallback  */ }
         setCopiado(true)
         window.setTimeout(() => setCopiado(false), 1500)
     }

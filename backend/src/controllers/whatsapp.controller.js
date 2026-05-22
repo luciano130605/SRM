@@ -47,7 +47,6 @@ async function conectar(req, res) {
     }
 }
 
-// GET /whatsapp/estado
 function estado(req, res) {
     res.json({ ok: true, ...waService.obtenerEstado() })
 }

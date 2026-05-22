@@ -1,22 +1,24 @@
 import { useMemo, useState, useEffect } from "react"
 import Formulario from "../formulario/formulario"
-import { ESTADOS_PEDIDO } from "./estados-pedido"
 import formatPrecio from "./format-precio"
 import X from "../../icons/X"
 import DropdownMenu from "../dropdown-menu/dropdown-menu"
+import GestorEstadosPedido from "./gestor-estados-pedidos"
 
-
-export default function FormularioPedido({ datosIniciales, onCrear, creando, clientes, productos }) {
+export default function FormularioPedido({ datosIniciales, onCrear, creando, clientes, productos, estados, setEstados, onError }) {
     const [clienteId, setClienteId] = useState('')
-
-    const [estado, setEstado] = useState('pendiente')
+    const [estado, setEstado] = useState('')
     const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10))
     const [notas, setNotas] = useState('')
     const [items, setItems] = useState([{ productoId: '', cantidad: 1 }])
 
     useEffect(() => {
-        if (!datosIniciales) return
+        if (estado === '' && estados.length > 0)
+            setEstado(estados[0].nombre)
+    }, [estados])
 
+    useEffect(() => {
+        if (!datosIniciales) return
         setClienteId(String(datosIniciales.clienteId ?? ""))
         setEstado(String(datosIniciales.estado ?? ""))
         setFecha(String(datosIniciales.fecha ?? ""))
@@ -47,7 +49,6 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
             .filter(item => item.productoId)
             .map(item => {
                 const producto = productos.find(p => String(p.id) === String(item.productoId))
-
                 return {
                     productoId: item.productoId,
                     nombre: producto?.nombre || '',
@@ -60,7 +61,7 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
 
         onCrear({ clienteId, estado, fecha, notas, items: itemsConDatos, total }, () => {
             setClienteId('')
-            setEstado('pendiente')
+            setEstado(estados[0]?.nombre || '')
             setFecha(new Date().toISOString().slice(0, 10))
             setNotas('')
             setItems([{ productoId: '', cantidad: 1 }])
@@ -77,7 +78,7 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
             onChange: setClienteId,
             options: [
                 { value: '', label: 'Seleccionar cliente' },
-                ...clientes.map(cliente => ({ value: cliente.id, label: cliente.nombre })),
+                ...clientes.map(c => ({ value: c.id, label: c.nombre })),
             ],
         },
         {
@@ -86,15 +87,15 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
             type: 'select',
             value: estado,
             onChange: setEstado,
-            options: ESTADOS_PEDIDO.map(item => ({ value: item, label: item })),
+            options: estados.map(e => ({ value: e.nombre, label: e.nombre })),
         },
-            {
-                name: 'fecha',
-                label: 'Fecha',
-                type: 'date',
-                value: fecha,
-                onChange: setFecha,
-            },
+        {
+            name: 'fecha',
+            label: 'Fecha',
+            type: 'date',
+            value: fecha,
+            onChange: setFecha,
+        },
         {
             name: 'productos',
             render: () => (
@@ -110,18 +111,10 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
                                 value={item.productoId}
                                 placeholder="Seleccionar..."
                                 options={[
-                                    {
-                                        value: '',
-                                        label: 'Seleccionar...',
-                                    },
-                                    ...productos.map(producto => ({
-                                        value: producto.id,
-                                        label: producto.nombre,
-                                    })),
+                                    { value: '', label: 'Seleccionar...' },
+                                    ...productos.map(p => ({ value: p.id, label: p.nombre })),
                                 ]}
-                                onChange={value =>
-                                    updateItem(index, 'productoId', value)
-                                }
+                                onChange={value => updateItem(index, 'productoId', value)}
                             />
                             <input
                                 type="number"
@@ -155,6 +148,16 @@ export default function FormularioPedido({ datosIniciales, onCrear, creando, cli
             value: notas,
             onChange: setNotas,
             placeholder: 'Indicaciones especiales...',
+        },
+        {
+            name: 'gestor',
+            render: () => (
+                <GestorEstadosPedido
+                    estados={estados}
+                    setEstados={setEstados}
+                    onError={onError}
+                />
+            ),
         },
     ]
 

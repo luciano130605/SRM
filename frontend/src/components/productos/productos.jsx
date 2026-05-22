@@ -345,11 +345,13 @@ function Productos({ datosIniciales }) {
             </header>
 
             <div className="page-toolbar toolbar">
-                <Comandos
-                    abierto={comandosAbiertos}
-                    setAbierto={setComandosAbiertos}
-                />
+                <div className="comandosBtn">
 
+                    <Comandos
+                        abierto={comandosAbiertos}
+                        setAbierto={setComandosAbiertos}
+                    />
+                </div>
                 <Buscador
                     value={busqueda}
                     onChange={setBusqueda}

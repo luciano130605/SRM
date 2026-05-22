@@ -1,10 +1,7 @@
 import { useMemo } from "react"
 import formatPrecio from "./format-precio"
 
-/**
- * GraficaVentas — barras SVG animadas de ingresos por mes (últimos 6)
- * Props: pedidos[]
- */
+
 export default function GraficaVentas({ pedidos }) {
     const datos = useMemo(() => {
         const meses = {}
@@ -40,12 +37,12 @@ export default function GraficaVentas({ pedidos }) {
         )
     }
 
-    const maxVal  = Math.max(...datos.map(d => d.total), 1)
-    const H       = 130   // chart height px
-    const BAR_W   = 36
-    const GAP     = 16
-    const PAD_L   = 4
-    const totalW  = datos.length * (BAR_W + GAP) - GAP + PAD_L
+    const maxVal = Math.max(...datos.map(d => d.total), 1)
+    const H = 130   
+    const BAR_W = 36
+    const GAP = 16
+    const PAD_L = 4
+    const totalW = datos.length * (BAR_W + GAP) - GAP + PAD_L
 
     return (
         <div className="dash-panel">
@@ -62,16 +59,15 @@ export default function GraficaVentas({ pedidos }) {
                 >
                     <defs>
                         <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%"   stopColor="#C8435A" stopOpacity="0.9" />
+                            <stop offset="0%" stopColor="#C8435A" stopOpacity="0.9" />
                             <stop offset="100%" stopColor="#E8899A" stopOpacity="0.5" />
                         </linearGradient>
                         <linearGradient id="barGradDim" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%"   stopColor="#DDD9D0" stopOpacity="0.8" />
+                            <stop offset="0%" stopColor="#DDD9D0" stopOpacity="0.8" />
                             <stop offset="100%" stopColor="#EDEBE5" stopOpacity="0.4" />
                         </linearGradient>
                     </defs>
 
-                    {/* Líneas guía horizontales */}
                     {[0.25, 0.5, 0.75, 1].map(frac => {
                         const y = H - H * frac
                         return (
@@ -86,13 +82,12 @@ export default function GraficaVentas({ pedidos }) {
 
                     {datos.map((d, i) => {
                         const isLast = i === datos.length - 1
-                        const barH   = Math.max((d.total / maxVal) * H, 4)
-                        const x      = PAD_L + i * (BAR_W + GAP)
-                        const y      = H - barH
+                        const barH = Math.max((d.total / maxVal) * H, 4)
+                        const x = PAD_L + i * (BAR_W + GAP)
+                        const y = H - barH
 
                         return (
                             <g key={d.label}>
-                                {/* Barra */}
                                 <rect
                                     x={x} y={y}
                                     width={BAR_W} height={barH}
@@ -103,7 +98,6 @@ export default function GraficaVentas({ pedidos }) {
                                     }}
                                 />
 
-                                {/* Valor encima — solo en la barra más alta o la última */}
                                 {(isLast || d.total === maxVal) && (
                                     <text
                                         x={x + BAR_W / 2} y={y - 6}
@@ -118,7 +112,6 @@ export default function GraficaVentas({ pedidos }) {
                                     </text>
                                 )}
 
-                                {/* Etiqueta mes */}
                                 <text
                                     x={x + BAR_W / 2} y={H + 18}
                                     textAnchor="middle"

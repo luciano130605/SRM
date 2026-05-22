@@ -3,6 +3,7 @@ const supabase = require('../supabase')
 function mapPedido(p) {
     return {
         id: p.id,
+        nro: p.nro,
         clienteId: p.cliente_id,
         cliente: p.clientes,
         items: p.items,
@@ -44,7 +45,6 @@ async function crearPedido(req, res) {
             return res.status(400).json({ ok: false, mensaje: 'Falta el cliente' })
         }
 
-        // Obtener productos de Supabase para validar y calcular
         const ids = productosRecibidos.map(i => i.productoId || i.idProducto)
         const { data: productosDB, error: prodError } = await supabase
             .from('productos')
@@ -145,7 +145,7 @@ async function actualizarEstadoPedido(req, res) {
         .select('*, clientes(id, nombre)')
         .single()
 
-    if (error) 
+    if (error)
         return res.status(500).json({ ok: false, mensaje: error.message })
     if (!data) return res.status(404).json({ ok: false, mensaje: 'Pedido no encontrado' })
 

@@ -67,7 +67,7 @@ export default function ConfiguracionWhatsapp({ abierto, onCerrar }) {
         setCargando(true)
         try {
             await api.post('/whatsapp/desconectar')
-        } catch { /* el SSE ya va a actualizar el estado */ }
+        } catch { /* */ }
         finally { setCargando(false) }
     }
 

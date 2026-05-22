@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { ESTADOS_PEDIDO, estadoLabel } from "./estados-pedido"
 import DropdownMenu from "../dropdown-menu/dropdown-menu"
 
 export default function FiltrosPedidos({
@@ -8,6 +7,7 @@ export default function FiltrosPedidos({
     orden,
     setOrden,
     hayFiltros,
+    estados = [],
     totalFiltrados,
 }) {
     const [estadoAbierto, setEstadoAbierto] = useState(false)
@@ -20,10 +20,9 @@ export default function FiltrosPedidos({
         { value: "menor-total", label: "Menor total" },
     ]
 
-    const estadoActual =
-        filtroEstado
-            ? estadoLabel(filtroEstado)
-            : "Todos los estados"
+    const estadoActual = filtroEstado
+        ? estados.find(e => e.nombre === filtroEstado)?.nombre ?? filtroEstado
+        : "Todos los estados"
 
     const ordenActual =
         ordenes.find(o => o.value === orden)?.label || "Más reciente"
@@ -44,11 +43,9 @@ export default function FiltrosPedidos({
                     onCerrar={() => setEstadoAbierto(false)}
                     opciones={[
                         { value: "", label: "Todos los estados" },
-                        ...ESTADOS_PEDIDO.map(estado => ({
-                            value: estado,
-                            label: estadoLabel(estado),
-                        })),
+                        ...estados.map(e => ({ value: e.nombre, label: e.nombre })),
                     ]}
+
                     onSeleccionar={({ value }) => {
                         setFiltroEstado(value)
                         setEstadoAbierto(false)

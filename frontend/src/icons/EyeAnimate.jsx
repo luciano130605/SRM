@@ -9,7 +9,6 @@ const EyeIcon = forwardRef(
         const [scope, animate] = useAnimate();
 
         const start = useCallback(async () => {
-            // Pupil contracts (blink effect)
             animate(
                 ".eye-pupil",
                 {
@@ -21,7 +20,6 @@ const EyeIcon = forwardRef(
                 }
             );
 
-            // Eye shape slightly narrows
             animate(
                 ".eye-shape",
                 {
@@ -71,14 +69,12 @@ const EyeIcon = forwardRef(
             >
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
 
-                {/* Pupil */}
                 <motion.path
                     d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"
                     className="eye-pupil"
                     style={{ transformOrigin: "50% 50%" }}
                 />
 
-                {/* Eye shape */}
                 <motion.path
                     d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"
                     className="eye-shape"

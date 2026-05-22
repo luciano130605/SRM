@@ -11,21 +11,18 @@ const BrainCircuitIcon = forwardRef(
         const [scope, animate] = useAnimate();
 
         const startAnimation = useCallback(() => {
-            // Brain outline subtle pulse
             animate(
                 ".brain-outline",
                 { opacity: [1, 0.7, 1] },
                 { duration: 2, repeat: Infinity, ease: "easeInOut" },
             );
 
-            // Circuit lines drawing
             animate(
                 ".circuit-line",
                 { pathLength: [0, 1], opacity: [0, 1] },
                 { duration: 0.6, ease: "easeOut" },
             );
 
-            // Synaptic terminals pulsing in sequence
             const terminals = [
                 ".terminal-1",
                 ".terminal-2",
